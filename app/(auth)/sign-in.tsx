@@ -254,7 +254,7 @@ export default function SignIn() {
           {appleLoading
             ? <ActivityIndicator color={Colors.textPrimary} size="small" />
             : <>
-                <Text style={{ fontSize: 18 }}>🍎</Text>
+                <AppleLogo size={20} />
                 <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary }}>Continue with Apple</Text>
               </>
           }
@@ -269,7 +269,7 @@ export default function SignIn() {
           {oauthLoading
             ? <ActivityIndicator color={Colors.textPrimary} size="small" />
             : <>
-                <Text style={{ fontSize: 18 }}>🇬</Text>
+                <GoogleLogo size={20} />
                 <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary }}>Continue with Google</Text>
               </>
           }

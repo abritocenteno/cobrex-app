@@ -136,7 +136,7 @@ export default function SignUp() {
           {oauthLoading
             ? <ActivityIndicator color={Colors.textPrimary} size="small" />
             : <>
-                <Text style={{ fontSize: 18 }}>🇬</Text>
+                <GoogleLogo size={20} />
                 <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary }}>Continue with Google</Text>
               </>
           }
