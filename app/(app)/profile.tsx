@@ -156,7 +156,7 @@ export default function ProfileScreen() {
         {/* Avatar */}
         {isArtist && (
           <TouchableOpacity onPress={handlePickImage} style={{ alignSelf: 'center', marginBottom: 24 }}>
-            {avatarUrl ? (
+            {avatarUrl && avatarUrl.length > 0 ? (
               <View>
                 <Image source={{ uri: avatarUrl }} style={{ width: 90, height: 90, borderRadius: 45 }} />
                 <View style={{ position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.accent, justifyContent: 'center', alignItems: 'center' }}>
@@ -187,8 +187,7 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* Artist profile */}
-        {isArtist && (
+        {isArtist ? (
           <>
             <View style={sectionStyle}>
               <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 12 }}>🎤 Artist Profile</Text>
@@ -222,12 +221,12 @@ export default function ProfileScreen() {
                   </TouchableOpacity>
                 ))}
               </View>
-              {genre && (
+              {genre ? (
                 <>
                   <Text style={{ ...labelStyle, marginTop: 16 }}>Subgenre</Text>
                   <TextInput value={subGenre} onChangeText={setSubGenre} placeholder="e.g. House, Trap, Indie..." placeholderTextColor={Colors.textMuted} style={inputStyle} />
                 </>
-              )}
+              ) : null}
             </View>
 
             {/* Social */}
@@ -249,7 +248,7 @@ export default function ProfileScreen() {
               ))}
             </View>
           </>
-        )}
+        ) : null}
 
         {/* Account info */}
         <View style={sectionStyle}>
