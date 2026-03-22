@@ -16,8 +16,10 @@ export default function SignUp() {
   const [code, setCode] = useState('');
   const [pendingVerification, setPendingVerification] = useState(false);
   const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
+  const { startOAuthFlow: startAppleOAuthFlow } = useOAuth({ strategy: 'oauth_apple' });
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
+  const [appleLoading, setAppleLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSignUp = async () => {
@@ -49,6 +51,23 @@ export default function SignUp() {
       setError(e.errors?.[0]?.message ?? 'Verification failed');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAppleSignUp = async () => {
+    setAppleLoading(true);
+    try {
+      const { createdSessionId, setActive } = await startAppleOAuthFlow({
+        redirectUrl: Linking.createURL('/(app)', { scheme: 'cobrex' }),
+      });
+      if (createdSessionId && setActive) {
+        await setActive({ session: createdSessionId });
+        router.replace('/(app)');
+      }
+    } catch (e: any) {
+      setError(e.message ?? 'Apple sign up failed');
+    } finally {
+      setAppleLoading(false);
     }
   };
 
