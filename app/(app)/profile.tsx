@@ -2,7 +2,7 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '../../src/constants/colors';
@@ -20,6 +20,7 @@ export default function ProfileScreen() {
   const updateProfile = useMutation(api.users.update);
   const updateArtist = useMutation(api.artists.update);
   const generateUploadUrl = useMutation(api.assets.generateUploadUrl);
+  const saveFile = useMutation(api.assets.saveFile);
   const { toast, showToast, hideToast } = useToast();
 
   // User profile fields
@@ -39,6 +40,7 @@ export default function ProfileScreen() {
   const [website, setWebsite] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [saving, setSaving] = useState(false);
+  const imagePickedRef = useRef(false);
 
   const artistData = artist?.[0];
   const isArtist = profile?.role === 'artist';
@@ -60,7 +62,7 @@ export default function ProfileScreen() {
       setTiktok((artistData as any).tiktokHandle ?? '');
       setYoutube((artistData as any).youtubeHandle ?? '');
       setWebsite(artistData.websiteUrl ?? '');
-      setAvatarUrl(artistData.avatarUrl ?? '');
+      if (!imagePickedRef.current) setAvatarUrl(artistData.avatarUrl ?? '');
     }
   }, [artistData]);
 
@@ -77,6 +79,7 @@ export default function ProfileScreen() {
         quality: 0.5,
       });
       if (!result.canceled && result.assets[0]) {
+        imagePickedRef.current = true;
         setAvatarUrl(result.assets[0].uri);
       }
     } catch (e) {
@@ -128,6 +131,7 @@ export default function ProfileScreen() {
         });
       }
 
+      imagePickedRef.current = false;
       showToast('Profile saved!');
     } catch (e: any) {
       showToast(e.message ?? 'Failed to save', 'error');
