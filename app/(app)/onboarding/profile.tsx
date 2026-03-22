@@ -12,6 +12,7 @@ export default function OnboardingProfile() {
   const profile = useQuery(api.users.myProfile);
   const artist = useQuery(api.artists.list);
   const updateArtist = useMutation(api.artists.update);
+  const generateUploadUrl = useMutation(api.assets.generateUploadUrl);
 
   const [name, setName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -43,16 +44,10 @@ export default function OnboardingProfile() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [1, 1],
-        quality: 0.8,
-        base64: true,
+        quality: 0.5,
       });
       if (!result.canceled && result.assets[0]) {
-        const asset = result.assets[0];
-        if (asset.base64) {
-          setAvatarUrl(`data:image/jpeg;base64,${asset.base64}`);
-        } else {
-          setAvatarUrl(asset.uri);
-        }
+        setAvatarUrl(result.assets[0].uri);
       }
     } catch (e) {
       console.log('Image pick error:', e);
@@ -63,13 +58,36 @@ export default function OnboardingProfile() {
     if (!artistData?._id) return;
     setLoading(true);
     try {
+      let finalAvatarUrl = artistData.avatarUrl ?? undefined;
+
+      // Upload image to Convex storage if a new one was selected
+      if (avatarUrl && avatarUrl !== artistData.avatarUrl && !avatarUrl.startsWith('http')) {
+        try {
+          const uploadUrl = await generateUploadUrl();
+          const response = await fetch(avatarUrl);
+          const blob = await response.blob();
+          const uploadResponse = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': blob.type || 'image/jpeg' },
+            body: blob,
+          });
+          if (uploadResponse.ok) {
+            const { storageId } = await uploadResponse.json();
+            // Get public URL - use storageId as URL reference
+            finalAvatarUrl = storageId;
+          }
+        } catch (e) {
+          console.log('Image upload failed, skipping:', e);
+        }
+      }
+
       await updateArtist({
         id: artistData._id,
         name: name.trim() || artistData.name,
         bio: bio || undefined,
         location: location || undefined,
         country: country || undefined,
-        avatarUrl: avatarUrl || undefined,
+        avatarUrl: finalAvatarUrl,
       });
       router.push('/(app)/onboarding/genre');
     } finally {
