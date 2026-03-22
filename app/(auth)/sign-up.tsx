@@ -1,4 +1,8 @@
-import { useSignUp } from '@clerk/clerk-expo';
+import { useSignUp, useOAuth } from '@clerk/clerk-expo';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
+
+WebBrowser.maybeCompleteAuthSession();
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
@@ -11,7 +15,9 @@ export default function SignUp() {
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
   const [pendingVerification, setPendingVerification] = useState(false);
+  const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSignUp = async () => {
@@ -43,6 +49,23 @@ export default function SignUp() {
       setError(e.errors?.[0]?.message ?? 'Verification failed');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    setOauthLoading(true);
+    try {
+      const { createdSessionId, setActive } = await startOAuthFlow({
+        redirectUrl: Linking.createURL('/(app)', { scheme: 'cobrex' }),
+      });
+      if (createdSessionId && setActive) {
+        await setActive({ session: createdSessionId });
+        router.replace('/(app)');
+      }
+    } catch (e: any) {
+      setError(e.message ?? 'Google sign up failed');
+    } finally {
+      setOauthLoading(false);
     }
   };
 
@@ -79,6 +102,27 @@ export default function SignUp() {
         <TouchableOpacity onPress={pendingVerification ? handleVerify : handleSignUp} disabled={loading} style={{ backgroundColor: Colors.accent, borderRadius: 12, padding: 16, alignItems: 'center' }}>
           {loading ? <ActivityIndicator color="#000" /> : <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 15, color: '#000' }}>{pendingVerification ? 'Verify Email' : 'Create Account'}</Text>}
         </TouchableOpacity>
+        {/* Divider */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 20 }}>
+          <View style={{ flex: 1, height: 1, backgroundColor: Colors.border }} />
+          <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted, marginHorizontal: 12 }}>or continue with</Text>
+          <View style={{ flex: 1, height: 1, backgroundColor: Colors.border }} />
+        </View>
+
+        <TouchableOpacity
+          onPress={handleGoogleSignUp}
+          disabled={oauthLoading}
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, paddingVertical: 14, marginBottom: 16, gap: 10 }}
+        >
+          {oauthLoading
+            ? <ActivityIndicator color={Colors.textPrimary} size="small" />
+            : <>
+                <Text style={{ fontSize: 18 }}>🇬</Text>
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary }}>Continue with Google</Text>
+              </>
+          }
+        </TouchableOpacity>
+
         <TouchableOpacity onPress={() => router.push('/(auth)/sign-in')} style={{ marginTop: 24, alignItems: 'center' }}>
           <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 14, color: Colors.textMuted }}>
             Already have an account? <Text style={{ color: Colors.accent }}>Sign in</Text>
