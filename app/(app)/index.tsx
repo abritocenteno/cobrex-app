@@ -10,9 +10,11 @@ export default function AppIndex() {
   const profile = useQuery(api.users.myProfile);
 
   useEffect(() => {
-    if (profile === undefined) return; // still loading
+    if (profile === undefined) return;
     if (profile === null || !profile.role) {
       router.replace('/(app)/role-selection');
+    } else if (!profile.onboardingDone && profile.role === 'artist') {
+      router.replace('/(app)/onboarding');
     } else {
       router.replace('/(app)/dashboard');
     }
