@@ -17,6 +17,12 @@ export default function ProfileScreen() {
   const router = useRouter();
   const profile = useQuery(api.users.myProfile);
   const artist = useQuery(api.artists.list);
+  const artistData0 = artist?.[0];
+  const storedAvatarId = artistData0?.avatarUrl;
+  const storageUrl = useQuery(
+    api.artists.getStorageUrl,
+    storedAvatarId && !storedAvatarId.startsWith('http') && !storedAvatarId.startsWith('data') ? { storageId: storedAvatarId } : 'skip'
+  );
   const updateProfile = useMutation(api.users.update);
   const updateArtist = useMutation(api.artists.update);
   const generateUploadUrl = useMutation(api.assets.generateUploadUrl);
@@ -42,7 +48,8 @@ export default function ProfileScreen() {
   const [saving, setSaving] = useState(false);
   const imagePickedRef = useRef(false);
 
-  const artistData = artist?.[0];
+  const artistData = artistData0;
+  const displayAvatarUrl = imagePickedRef.current ? avatarUrl : (storageUrl ?? (storedAvatarId?.startsWith('http') ? storedAvatarId : null));
   const isArtist = profile?.role === 'artist';
 
   useEffect(() => {
@@ -160,9 +167,9 @@ export default function ProfileScreen() {
         {/* Avatar */}
         {isArtist && (
           <TouchableOpacity onPress={handlePickImage} style={{ alignSelf: 'center', marginBottom: 24 }}>
-            {avatarUrl && avatarUrl.length > 0 ? (
+            {displayAvatarUrl ? (
               <View>
-                <Image source={{ uri: avatarUrl }} style={{ width: 90, height: 90, borderRadius: 45 }} />
+                <Image source={{ uri: displayAvatarUrl }} style={{ width: 90, height: 90, borderRadius: 45 }} />
                 <View style={{ position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.accent, justifyContent: 'center', alignItems: 'center' }}>
                   <Text style={{ fontSize: 14 }}>✏️</Text>
                 </View>
