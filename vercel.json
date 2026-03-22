@@ -2,7 +2,14 @@
   "buildCommand": "npx expo export --platform web",
   "outputDirectory": "dist",
   "installCommand": "npm install --legacy-peer-deps",
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
+    { "source": "/(app)/shows/edit/:id", "destination": "/(app)/shows/edit/[id].html" },
+    { "source": "/(app)/shows/checklist/:showId", "destination": "/(app)/shows/checklist/[showId].html" },
+    { "source": "/(app)/shows/:id", "destination": "/(app)/shows/[id].html" },
+    { "source": "/(app)/contacts/:id", "destination": "/(app)/contacts/[id].html" },
+    { "source": "/(app)/deals/:id", "destination": "/(app)/deals/[id].html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
