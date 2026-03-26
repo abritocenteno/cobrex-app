@@ -4,7 +4,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Colors } from '../../../src/constants/colors';
 import { formatTime, formatDate } from '../../../src/utils/format';
-import { formatTime, formatDate } from '../../../src/utils/format';
 
 const STATUS_COLORS: Record<string, string> = {
   confirmed: Colors.green,
@@ -53,7 +52,7 @@ export default function ShowDetail() {
     { label: 'Confirmed', value: 'confirmed' },
     { label: 'Completed', value: 'completed' },
     { label: 'Cancelled', value: 'cancelled' },
-  ];
+  ] as const;
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bg }}>

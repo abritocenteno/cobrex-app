@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from 'convex/react';
 import { useState } from 'react';
 import { api } from '../../convex/_generated/api';
+import { Id } from '../../convex/_generated/dataModel';
 import { View, Text, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
 import { Colors } from '../../src/constants/colors';
 import EmptyState from '../../src/components/EmptyState';
@@ -26,7 +27,7 @@ export default function AlertsScreen() {
   const profile = useQuery(api.users.myProfile);
   const [filter, setFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
-  const [dismissTarget, setDismissTarget] = useState<string | null>(null);
+  const [dismissTarget, setDismissTarget] = useState<Id<"alerts"> | null>(null);
   const acknowledge = useMutation(api.alerts.acknowledge);
   const resolve = useMutation(api.alerts.resolve);
   const dismiss = useMutation(api.alerts.dismiss);
@@ -115,13 +116,13 @@ export default function AlertsScreen() {
                 {isActive && (
                   <View style={{ flexDirection: 'row', gap: 8 }}>
                     <TouchableOpacity
-                      onPress={() => acknowledge({ alertId: alert._id })}
+                      onPress={() => acknowledge({ id: alert._id })}
                       style={{ flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: `${Colors.accentBlue}18`, alignItems: 'center', borderWidth: 1, borderColor: `${Colors.accentBlue}30` }}
                     >
                       <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: Colors.accentBlue }}>Acknowledge</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      onPress={() => resolve({ alertId: alert._id })}
+                      onPress={() => resolve({ id: alert._id })}
                       style={{ flex: 1, paddingVertical: 8, borderRadius: 8, backgroundColor: `${Colors.green}18`, alignItems: 'center', borderWidth: 1, borderColor: `${Colors.green}30` }}
                     >
                       <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: Colors.green }}>Resolve</Text>
@@ -145,7 +146,7 @@ export default function AlertsScreen() {
         message="Are you sure you want to dismiss this alert?"
         confirmLabel="Dismiss"
         confirmColor={Colors.textMuted}
-        onConfirm={() => { if (dismissTarget) dismiss({ alertId: dismissTarget as any }); setDismissTarget(null); }}
+        onConfirm={() => { if (dismissTarget) dismiss({ id: dismissTarget }); setDismissTarget(null); }}
         onCancel={() => setDismissTarget(null)}
       />
     </View>

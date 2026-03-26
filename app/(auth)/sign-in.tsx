@@ -136,7 +136,6 @@ export default function SignIn() {
     fontFamily: 'DMSans_400Regular',
     fontSize: 14,
     marginBottom: 12,
-    outlineStyle: 'none',
   } as const;
 
   return (

@@ -35,7 +35,6 @@ function ConvexClerkProvider({ children }: { children: React.ReactNode }) {
     <ConvexProviderWithClerk
       client={convex}
       useAuth={useAuth}
-      templateName="convex"
     >
       {children}
     </ConvexProviderWithClerk>

@@ -4,7 +4,6 @@ import { api } from '../../../convex/_generated/api';
 import { View, Text, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity, TextInput } from 'react-native';
 import { Colors } from '../../../src/constants/colors';
 import { formatTime, formatDate } from '../../../src/utils/format';
-import { formatTime, formatDate } from '../../../src/utils/format';
 import EmptyState from '../../../src/components/EmptyState';
 import { SkeletonList } from '../../../src/components/Skeleton';
 import { useState } from 'react';

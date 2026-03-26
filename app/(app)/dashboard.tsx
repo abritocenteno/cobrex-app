@@ -3,7 +3,6 @@ import { api } from '../../convex/_generated/api';
 import { View, Text, ScrollView, useWindowDimensions, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
 import { Colors } from '../../src/constants/colors';
 import { formatTime, formatDate } from '../../src/utils/format';
-import { formatTime, formatDate } from '../../src/utils/format';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { SkeletonList, SkeletonStatCards } from '../../src/components/Skeleton';
