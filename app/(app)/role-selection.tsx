@@ -30,7 +30,7 @@ export default function RoleSelection() {
         displayName: user.fullName ?? user.primaryEmailAddress?.emailAddress ?? 'User',
         email: user.primaryEmailAddress?.emailAddress ?? '',
       });
-      router.replace('/(app)/dashboard');
+      router.replace('/(app)');
     } catch (e: any) {
       setError(e.message ?? 'Failed to create profile');
     } finally {
