@@ -3,6 +3,8 @@ import { useRouter } from 'expo-router';
 import { api } from '../../../convex/_generated/api';
 import { View, Text, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity, TextInput } from 'react-native';
 import { Colors } from '../../../src/constants/colors';
+import { formatTime, formatDate } from '../../../src/utils/format';
+import { formatTime, formatDate } from '../../../src/utils/format';
 import EmptyState from '../../../src/components/EmptyState';
 import { SkeletonList } from '../../../src/components/Skeleton';
 import { useState } from 'react';
@@ -189,7 +191,7 @@ function ShowCard({ show }: { show: any }) {
           {show.name}
         </Text>
         <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted, marginBottom: 8 }}>
-          {show.showTime ? `${show.showTime} · ` : ''}{date.toLocaleDateString('default', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+          {show.showTime ? `${formatTime(show.showTime)} · ` : ''}{formatDate(show.showDate, { weekday: true })}
         </Text>
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 20, backgroundColor: `${statusColor}18` }}>

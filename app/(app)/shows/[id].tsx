@@ -3,6 +3,8 @@ import { api } from '../../../convex/_generated/api';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Colors } from '../../../src/constants/colors';
+import { formatTime, formatDate } from '../../../src/utils/format';
+import { formatTime, formatDate } from '../../../src/utils/format';
 
 const STATUS_COLORS: Record<string, string> = {
   confirmed: Colors.green,
@@ -86,11 +88,11 @@ export default function ShowDetail() {
           <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 16 }}>📅 Schedule</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
             {[
-              { label: 'Date', value: new Date(show.showDate).toLocaleDateString('default', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) },
-              { label: 'Load In', value: show.loadInTime ?? '—' },
-              { label: 'Soundcheck', value: show.soundcheckTime ?? '—' },
-              { label: 'Doors', value: show.doorsTime ?? '—' },
-              { label: 'Show Time', value: show.showTime ?? '—' },
+              { label: 'Date', value: formatDate(show.showDate, { weekday: true }) },
+              { label: 'Load In', value: formatTime(show.loadInTime) },
+              { label: 'Soundcheck', value: formatTime(show.soundcheckTime) },
+              { label: 'Doors', value: formatTime(show.doorsTime) },
+              { label: 'Show Time', value: formatTime(show.showTime) },
               { label: 'Set Length', value: show.setLengthMinutes ? `${show.setLengthMinutes} min` : '—' },
             ].map((item) => (
               <View key={item.label} style={{ minWidth: 140 }}>

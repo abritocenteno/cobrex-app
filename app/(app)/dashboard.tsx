@@ -2,6 +2,8 @@ import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { View, Text, ScrollView, useWindowDimensions, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
 import { Colors } from '../../src/constants/colors';
+import { formatTime, formatDate } from '../../src/utils/format';
+import { formatTime, formatDate } from '../../src/utils/format';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { SkeletonList, SkeletonStatCards } from '../../src/components/Skeleton';
@@ -131,7 +133,7 @@ export default function Dashboard() {
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary, marginBottom: 2 }}>{show.name}</Text>
                     <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted }}>
-                      {show.showTime ? `${show.showTime} · ` : ''}{new Date(show.showDate).toLocaleDateString()}
+                      {show.showTime ? `${formatTime(show.showTime)} · ` : ''}{formatDate(show.showDate, { short: true })}
                     </Text>
                   </View>
                   <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: `${Colors.accentBlue}18` }}>

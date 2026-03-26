@@ -5,11 +5,12 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/(app)/shows/edit/:id", "destination": "/(app)/shows/edit/[id].html" },
-    { "source": "/(app)/shows/checklist/:showId", "destination": "/(app)/shows/checklist/[showId].html" },
-    { "source": "/(app)/shows/:id", "destination": "/(app)/shows/[id].html" },
-    { "source": "/(app)/contacts/:id", "destination": "/(app)/contacts/[id].html" },
-    { "source": "/(app)/deals/:id", "destination": "/(app)/deals/[id].html" },
+    { "source": "/\\(app\\)/shows/edit/:id", "destination": "/(app)/shows/edit/[id].html" },
+    { "source": "/\\(app\\)/shows/checklist/:showId", "destination": "/(app)/shows/checklist/[showId].html" },
+    { "source": "/\\(app\\)/shows/:id", "destination": "/(app)/shows/[id].html" },
+    { "source": "/\\(app\\)/contacts/:id", "destination": "/(app)/contacts/[id].html" },
+    { "source": "/\\(app\\)/deals/:id", "destination": "/(app)/deals/[id].html" },
+    { "source": "/\\(app\\)/onboarding/:step", "destination": "/(app)/onboarding/[step].html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
