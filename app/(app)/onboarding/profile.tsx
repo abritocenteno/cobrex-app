@@ -1,7 +1,7 @@
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useRouter } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Image, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '../../../src/constants/colors';
@@ -21,8 +21,17 @@ export default function OnboardingProfile() {
   const [location, setLocation] = useState('');
   const [country, setCountry] = useState('');
   const [loading, setLoading] = useState(false);
+  const imagePickedRef = useRef(false);
 
   const artistData = artist?.[0];
+  const storedAvatarId = artistData?.avatarUrl;
+  const storageUrl = useQuery(
+    api.artists.getStorageUrl,
+    storedAvatarId && !storedAvatarId.startsWith('http') && !storedAvatarId.startsWith('data')
+      ? { storageId: storedAvatarId }
+      : 'skip'
+  );
+  const displayAvatarUrl = imagePickedRef.current ? avatarUrl : (storageUrl ?? (storedAvatarId?.startsWith('http') ? storedAvatarId : null));
 
   useEffect(() => {
     if (artistData) {
@@ -48,6 +57,7 @@ export default function OnboardingProfile() {
       });
       if (!result.canceled && result.assets[0]) {
         setAvatarUrl(result.assets[0].uri);
+        imagePickedRef.current = true;
       }
     } catch (e) {
       console.log('Image pick error:', e);
@@ -105,9 +115,9 @@ export default function OnboardingProfile() {
 
         {/* Avatar */}
         <TouchableOpacity onPress={handlePickImage} style={{ alignSelf: 'center', marginBottom: 28 }}>
-          {avatarUrl ? (
+          {displayAvatarUrl ? (
             <View>
-              <Image source={{ uri: avatarUrl }} style={{ width: 90, height: 90, borderRadius: 45 }} />
+              <Image source={{ uri: displayAvatarUrl }} style={{ width: 90, height: 90, borderRadius: 45 }} />
               <View style={{ position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: 14, backgroundColor: Colors.accent, justifyContent: 'center', alignItems: 'center' }}>
                 <Text style={{ fontSize: 14 }}>✏️</Text>
               </View>
@@ -118,7 +128,7 @@ export default function OnboardingProfile() {
             </View>
           )}
           <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted, textAlign: 'center', marginTop: 8 }}>
-            {avatarUrl ? 'Change photo' : 'Add photo'}
+            {displayAvatarUrl ? 'Change photo' : 'Add photo'}
           </Text>
         </TouchableOpacity>
 
