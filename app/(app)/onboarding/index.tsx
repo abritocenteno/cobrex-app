@@ -1,9 +1,12 @@
+import { useMutation } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
 import { useRouter } from 'expo-router';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { Colors } from '../../../src/constants/colors';
 
 export default function OnboardingWelcome() {
   const router = useRouter();
+  const dismissOnboarding = useMutation(api.users.dismissOnboarding);
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bg, alignItems: 'center' }}>
@@ -50,7 +53,10 @@ export default function OnboardingWelcome() {
           <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 16, color: '#000' }}>Let's get started →</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => router.replace('/(app)/dashboard')} style={{ alignItems: 'center', paddingVertical: 10 }}>
+        <TouchableOpacity
+          onPress={async () => { await dismissOnboarding(); router.replace('/(app)/dashboard'); }}
+          style={{ alignItems: 'center', paddingVertical: 10 }}
+        >
           <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 14, color: Colors.textMuted }}>Skip for now</Text>
         </TouchableOpacity>
       </ScrollView>

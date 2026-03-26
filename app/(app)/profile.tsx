@@ -27,6 +27,7 @@ export default function ProfileScreen() {
   const updateArtist = useMutation(api.artists.update);
   const generateUploadUrl = useMutation(api.assets.generateUploadUrl);
   const saveFile = useMutation(api.assets.saveFile);
+  const completeOnboarding = useMutation(api.users.completeOnboarding);
   const { toast, showToast, hideToast } = useToast();
 
   // User profile fields
@@ -139,6 +140,9 @@ export default function ProfileScreen() {
       }
 
       imagePickedRef.current = false;
+      if (isArtist && artistName.trim() && !profile?.profileComplete) {
+        await completeOnboarding();
+      }
       showToast('Profile saved!');
     } catch (e: any) {
       showToast(e.message ?? 'Failed to save', 'error');
