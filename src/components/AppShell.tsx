@@ -94,6 +94,8 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
+const CLEAN_PATHS = ['/(app)/onboarding', '/(app)/role-selection'];
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { width } = useWindowDimensions();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -103,10 +105,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const isMedium = width >= 768 && width < 1024;
   const isMobile = width < 768;
 
+  const { signOut } = useAuth();
   const profile = useQuery(api.users.myProfile);
   const role = profile?.role ?? 'artist';
   const router = useRouter();
   const pathname = usePathname();
+
+  // Onboarding and role-selection render without any nav chrome
+  const isCleanPath = CLEAN_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'));
+  if (isCleanPath) {
+    return <View style={{ flex: 1, backgroundColor: Colors.bg }}>{children}</View>;
+  }
   const navItems = role === 'manager' ? NAV_ITEMS_MANAGER : role === 'venue' ? NAV_ITEMS_VENUE : NAV_ITEMS_ARTIST;
 
   if (isWide) {
@@ -149,7 +158,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               </ScrollView>
               {/* Sign out */}
               <TouchableOpacity
-                onPress={() => useAuth().signOut()}
+                onPress={() => signOut()}
                 style={{ alignItems: 'center', paddingVertical: 12, marginBottom: 8 }}
               >
                 <Text style={{ fontSize: 18 }}>🚪</Text>
