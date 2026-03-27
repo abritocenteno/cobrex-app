@@ -1,7 +1,7 @@
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { useRouter } from 'expo-router';
 import { api } from '../../convex/_generated/api';
-import { View, Text, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, RefreshControl, TouchableOpacity, Linking, Share } from 'react-native';
 import { Colors } from '../../src/constants/colors';
 import EmptyState from '../../src/components/EmptyState';
 import { useState } from 'react';
@@ -127,24 +127,50 @@ export default function AssetsScreen() {
 }
 
 function AssetCard({ asset }: { asset: any }) {
+  const createShareLink = useMutation(api.assets.createShareLink);
+  const revokeShareLink = useMutation(api.assets.revokeShareLink);
+  const [sharing, setSharing] = useState(false);
+
+  const handleShare = async () => {
+    setSharing(true);
+    try {
+      let token = asset.shareToken;
+      if (!token || (asset.shareExpiresAt && asset.shareExpiresAt < Date.now())) {
+        token = await createShareLink({ id: asset._id, expiryDays: 30 });
+      }
+      const url = `https://cobrex-app.vercel.app/share/${token}`;
+      await Share.share({ message: url, url });
+    } finally {
+      setSharing(false);
+    }
+  };
+
   return (
-    <TouchableOpacity
-      onPress={() => asset.fileUrl && Linking.openURL(asset.fileUrl)}
-      style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, padding: 16, marginBottom: 8, flexDirection: 'row', alignItems: 'center' }}
-    >
-      <View style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: `${Colors.accent}18`, justifyContent: 'center', alignItems: 'center', marginRight: 14 }}>
-        <Text style={{ fontSize: 22 }}>{ASSET_TYPE_ICONS[asset.assetType] ?? '📁'}</Text>
-      </View>
-      <View style={{ flex: 1 }}>
-        <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, marginBottom: 2 }}>{asset.name}</Text>
-        <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 11, color: Colors.textMuted }}>
-          v{asset.versionNumber} · {asset.fileSizeBytes ? formatBytes(asset.fileSizeBytes) : 'Unknown size'}
-          {asset.isPublic ? ' · Public' : ''}
+    <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, padding: 16, marginBottom: 8, flexDirection: 'row', alignItems: 'center' }}>
+      <TouchableOpacity
+        onPress={() => asset.fileUrl && Linking.openURL(asset.fileUrl)}
+        style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}
+      >
+        <View style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: `${Colors.accent}18`, justifyContent: 'center', alignItems: 'center', marginRight: 14 }}>
+          <Text style={{ fontSize: 22 }}>{ASSET_TYPE_ICONS[asset.assetType] ?? '📁'}</Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, marginBottom: 2 }}>{asset.name}</Text>
+          <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 11, color: Colors.textMuted }}>
+            v{asset.versionNumber} · {asset.fileSizeBytes ? formatBytes(asset.fileSizeBytes) : 'Link'}
+            {asset.isPublic ? ' · 🔗 Shared' : ''}
+          </Text>
+        </View>
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={handleShare}
+        disabled={sharing}
+        style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: asset.isPublic ? `${Colors.accent}18` : Colors.surface2, borderWidth: 1, borderColor: asset.isPublic ? `${Colors.accent}40` : Colors.border, marginLeft: 8 }}
+      >
+        <Text style={{ fontSize: 14, color: asset.isPublic ? Colors.accent : Colors.textMuted }}>
+          {sharing ? '…' : '🔗'}
         </Text>
-      </View>
-      {asset.fileUrl && (
-        <Text style={{ fontSize: 16, color: Colors.textMuted }}>↗</Text>
-      )}
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 }
