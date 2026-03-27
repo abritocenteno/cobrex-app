@@ -1,7 +1,8 @@
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { useState } from 'react';
+import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Modal } from 'react-native';
 import { Colors } from '../../../src/constants/colors';
 import { formatTime, formatDate } from '../../../src/utils/format';
 
@@ -28,13 +29,38 @@ const TIMELINE_STATUS_COLORS: Record<string, string> = {
   skipped: Colors.accentRed,
 };
 
+function formatDuration(seconds: number) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 export default function ShowDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const [showSongPicker, setShowSongPicker] = useState(false);
   const show = useQuery(api.shows.get, id ? { id: id as any } : 'skip');
   const timeline = useQuery(api.timeline.list, id ? { showId: id as any } : 'skip');
+  const profile = useQuery(api.users.myProfile);
+  const setlistVersion = useQuery(api.setlist.getVersionForShow, id ? { showId: id as any } : 'skip');
+  const setlistItems = useQuery(api.setlist.items, setlistVersion?._id ? { setlistVersionId: setlistVersion._id } : 'skip');
+  const allSongs = useQuery(api.setlist.songs, profile?.artistId ? { artistId: profile.artistId } : 'skip');
   const updateStatus = useMutation(api.shows.update);
   const updateTimelineStatus = useMutation(api.timeline.updateStatus);
+  const createSetlist = useMutation(api.setlist.createVersionForShow);
+  const addItem = useMutation(api.setlist.addItem);
+  const removeItem = useMutation(api.setlist.removeItem);
+
+  const handleCreateSetlist = async () => {
+    if (!show || !profile?.artistId) return;
+    await createSetlist({ showId: show._id, artistId: profile.artistId, name: show.name });
+  };
+
+  const handleAddSong = async (songId: string) => {
+    if (!setlistVersion) return;
+    const nextPosition = (setlistItems?.length ?? 0) + 1;
+    await addItem({ setlistVersionId: setlistVersion._id, songId: songId as any, position: nextPosition });
+  };
 
   if (show === undefined) {
     return <View style={{ flex: 1, backgroundColor: Colors.bg, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator color={Colors.accent} /></View>;
@@ -165,14 +191,133 @@ export default function ShowDetail() {
         )}
 
         {/* Notes */}
-        {show.notes && (
+        {show.notes ? (
           <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 20, marginBottom: 16 }}>
             <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 10 }}>📝 Notes</Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 14, color: Colors.textMuted, lineHeight: 22 }}>{show.notes}</Text>
           </View>
-        )}
+        ) : null}
+
+        {/* Setlist */}
+        <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 20, marginBottom: 16 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
+            <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, flex: 1 }}>🎵 Setlist</Text>
+            {setlistVersion ? (
+              <TouchableOpacity
+                onPress={() => setShowSongPicker(true)}
+                style={{ backgroundColor: Colors.accent, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 }}
+              >
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 12, color: '#000' }}>+ Add Song</Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+
+          {setlistVersion === undefined ? (
+            <ActivityIndicator color={Colors.accent} />
+          ) : setlistVersion === null ? (
+            <TouchableOpacity
+              onPress={handleCreateSetlist}
+              style={{ borderWidth: 1, borderColor: Colors.border, borderStyle: 'dashed', borderRadius: 12, padding: 20, alignItems: 'center' }}
+            >
+              <Text style={{ fontSize: 28, marginBottom: 8 }}>🎶</Text>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, marginBottom: 4 }}>No setlist yet</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.accent }}>Tap to create one</Text>
+            </TouchableOpacity>
+          ) : setlistItems === undefined ? (
+            <ActivityIndicator color={Colors.accent} />
+          ) : setlistItems.length === 0 ? (
+            <View style={{ alignItems: 'center', paddingVertical: 16 }}>
+              <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.textMuted, marginBottom: 4 }}>No songs added yet</Text>
+              <TouchableOpacity onPress={() => setShowSongPicker(true)}>
+                <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 13, color: Colors.accent }}>Add from your library →</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <>
+              {setlistItems.map((item: any, index: number) => (
+                <View key={item._id} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: index < setlistItems.length - 1 ? 1 : 0, borderBottomColor: Colors.border }}>
+                  <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 13, color: Colors.textMuted, width: 28, textAlign: 'center', marginRight: 10 }}>{index + 1}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary }}>{item.song?.title ?? '—'}</Text>
+                    {(item.song?.keySignature || item.song?.bpm) ? (
+                      <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 11, color: Colors.textMuted, marginTop: 1 }}>
+                        {[item.song.keySignature, item.song.bpm ? `${item.song.bpm} BPM` : null].filter(Boolean).join(' · ')}
+                      </Text>
+                    ) : null}
+                  </View>
+                  {item.song?.durationSeconds ? (
+                    <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted, marginRight: 10 }}>
+                      {formatDuration(item.song.durationSeconds)}
+                    </Text>
+                  ) : null}
+                  <TouchableOpacity onPress={() => removeItem({ id: item._id })}>
+                    <Text style={{ fontSize: 14, color: Colors.textMuted }}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+              <View style={{ marginTop: 12, paddingTop: 10, borderTopWidth: 1, borderTopColor: Colors.border }}>
+                <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted }}>
+                  {setlistItems.length} songs · {formatDuration(setlistItems.reduce((sum: number, i: any) => sum + (i.song?.durationSeconds ?? 0), 0))} total
+                </Text>
+              </View>
+            </>
+          )}
+        </View>
 
       </ScrollView>
+
+      {/* Song Picker Modal */}
+      <Modal visible={showSongPicker} transparent animationType="slide" onRequestClose={() => setShowSongPicker(false)}>
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.6)' }}>
+          <View style={{ backgroundColor: Colors.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '70%' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: Colors.border }}>
+              <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 16, color: Colors.textPrimary, flex: 1 }}>Add Song</Text>
+              <TouchableOpacity onPress={() => setShowSongPicker(false)}>
+                <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 22, color: Colors.textMuted }}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView contentContainerStyle={{ padding: 16 }}>
+              {(allSongs ?? []).length === 0 ? (
+                <View style={{ alignItems: 'center', paddingVertical: 32 }}>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 14, color: Colors.textMuted, marginBottom: 12 }}>No songs in your library yet</Text>
+                  <TouchableOpacity
+                    onPress={() => { setShowSongPicker(false); router.push('/(app)/setlist-add'); }}
+                    style={{ backgroundColor: Colors.accent, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 }}
+                  >
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: '#000' }}>Add songs to library</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                (allSongs ?? []).map((song: any) => {
+                  const alreadyAdded = (setlistItems ?? []).some((i: any) => i.songId === song._id);
+                  return (
+                    <TouchableOpacity
+                      key={song._id}
+                      onPress={() => { if (!alreadyAdded) { handleAddSong(song._id); setShowSongPicker(false); } }}
+                      style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 4, borderBottomWidth: 1, borderBottomColor: Colors.border, opacity: alreadyAdded ? 0.4 : 1 }}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary }}>{song.title}</Text>
+                        {(song.keySignature || song.bpm) ? (
+                          <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 11, color: Colors.textMuted, marginTop: 1 }}>
+                            {[song.keySignature, song.bpm ? `${song.bpm} BPM` : null].filter(Boolean).join(' · ')}
+                          </Text>
+                        ) : null}
+                      </View>
+                      {song.durationSeconds ? (
+                        <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted, marginRight: 8 }}>{formatDuration(song.durationSeconds)}</Text>
+                      ) : null}
+                      <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: alreadyAdded ? Colors.textMuted : Colors.accent }}>
+                        {alreadyAdded ? 'Added' : '+ Add'}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
