@@ -3,7 +3,7 @@ import { api } from '../../convex/_generated/api';
 import { useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, Image, Share, Clipboard } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '../../src/constants/colors';
 import Toast from '../../src/components/Toast';
@@ -190,6 +190,23 @@ export default function ProfileScreen() {
             </Text>
           </TouchableOpacity>
         )}
+
+        {/* Share profile link — artists only */}
+        {isArtist && artistData?.slug ? (
+          <TouchableOpacity
+            onPress={() => {
+              const url = `https://cobrex-app.vercel.app/artist/${artistData.slug}`;
+              Share.share({ message: url, url });
+            }}
+            style={{ ...sectionStyle, flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, marginBottom: 2 }}>🔗 Share Artist Profile</Text>
+              <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted }}>cobrex-app.vercel.app/artist/{artistData.slug}</Text>
+            </View>
+            <Text style={{ fontSize: 18, color: Colors.accent }}>↗</Text>
+          </TouchableOpacity>
+        ) : null}
 
         {/* Account */}
         <View style={sectionStyle}>
