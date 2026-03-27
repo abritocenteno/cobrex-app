@@ -111,7 +111,7 @@ export default function OnboardingProfile() {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bg, alignItems: 'center' }}>
       <OnboardingHeader step={1} totalSteps={5} title="Artist Profile" subtitle="Tell us about yourself so venues and promoters know who you are." onSkip={() => router.push('/(app)/onboarding/genre')} />
-      <ScrollView style={{ width: '100%' }} contentContainerStyle={{ padding: 24, maxWidth: 560, width: '100%', alignSelf: 'center' }}>
+      <ScrollView style={{ width: '100%' }} contentContainerStyle={{ padding: 24, maxWidth: 560, width: '100%', alignSelf: 'center' }} keyboardShouldPersistTaps="handled">
 
         {/* Avatar */}
         <TouchableOpacity onPress={handlePickImage} style={{ alignSelf: 'center', marginBottom: 28 }}>

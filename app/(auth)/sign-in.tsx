@@ -139,8 +139,12 @@ export default function SignIn() {
   } as const;
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: Colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 32 }}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: Colors.bg }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 32 }}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
+      >
         <View style={{ maxWidth: 400, width: '100%', alignSelf: 'center' }}>
           <Text style={{ fontFamily: 'BebasNeue_400Regular', fontSize: 52, letterSpacing: 8, color: Colors.accent, textAlign: 'center', marginBottom: 6 }}>
             COBREX

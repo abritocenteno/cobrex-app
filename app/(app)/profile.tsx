@@ -166,7 +166,7 @@ export default function ProfileScreen() {
         <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.textMuted, marginBottom: 20 }}>Manage your account and artist details</Text>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 28, paddingTop: 0, maxWidth: 680, width: '100%', alignSelf: 'center' }}>
+      <ScrollView contentContainerStyle={{ padding: 28, paddingTop: 0, maxWidth: 680, width: '100%', alignSelf: 'center' }} keyboardShouldPersistTaps="handled">
 
         {/* Avatar */}
         {isArtist && (

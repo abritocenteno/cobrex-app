@@ -85,7 +85,7 @@ export default function EditShow() {
           {loading ? <ActivityIndicator color="#000" size="small" /> : <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: '#000' }}>Save</Text>}
         </TouchableOpacity>
       </View>
-      <ScrollView contentContainerStyle={{ padding: 24, maxWidth: 600, width: '100%', alignSelf: 'center' }}>
+      <ScrollView contentContainerStyle={{ padding: 24, maxWidth: 600, width: '100%', alignSelf: 'center' }} keyboardShouldPersistTaps="handled">
         {error ? <Text style={{ color: Colors.accentRed, fontSize: 13, marginBottom: 16, textAlign: 'center' }}>{error}</Text> : null}
         <Text style={labelStyle}>Show Name *</Text>
         <TextInput value={name} onChangeText={setName} placeholder="e.g. Paradiso Amsterdam" placeholderTextColor={Colors.textMuted} style={inputStyle} />

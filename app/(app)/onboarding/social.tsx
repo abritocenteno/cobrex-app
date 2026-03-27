@@ -69,7 +69,7 @@ export default function OnboardingSocial() {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bg, alignItems: 'center' }}>
       <OnboardingHeader step={3} totalSteps={5} title="Social Links" subtitle="Connect your profiles so fans and promoters can find you." onSkip={() => router.push('/(app)/onboarding/show')} />
-      <ScrollView style={{ width: '100%' }} contentContainerStyle={{ padding: 24, maxWidth: 560, width: '100%', alignSelf: 'center' }}>
+      <ScrollView style={{ width: '100%' }} contentContainerStyle={{ padding: 24, maxWidth: 560, width: '100%', alignSelf: 'center' }} keyboardShouldPersistTaps="handled">
         <SocialRow icon="📸" placeholder="@instagram_handle" value={instagram} onChangeText={setInstagram} />
         <SocialRow icon="🎧" placeholder="Spotify Artist ID" value={spotify} onChangeText={setSpotify} />
         <SocialRow icon="🎬" placeholder="@tiktok_handle" value={tiktok} onChangeText={setTiktok} />
