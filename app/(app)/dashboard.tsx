@@ -4,8 +4,10 @@ import { View, Text, ScrollView, useWindowDimensions, ActivityIndicator, Touchab
 import { Colors } from '../../src/constants/colors';
 import { formatTime, formatDate, formatMoney } from '../../src/utils/format';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SkeletonList, SkeletonStatCards } from '../../src/components/Skeleton';
+import DraftRestorePrompt from '../../src/components/DraftRestorePrompt';
+import { listDrafts, clearDraft } from '../../src/hooks/useDraftSave';
 
 function StatCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
@@ -340,6 +342,34 @@ export default function Dashboard() {
   const profile = useQuery(api.users.myProfile);
   const role = profile?.role ?? 'artist';
 
+  // Draft restore: detect any locally saved draft on mount
+  type DraftEntry = { key: string; route: string; ts: number; label: string };
+  const [pendingDraft, setPendingDraft] = useState<DraftEntry | null>(null);
+  useEffect(() => {
+    const drafts = listDrafts();
+    if (drafts.length > 0) setPendingDraft(drafts[0]);
+  }, []);
+
+  const DRAFT_ROUTES: Record<string, string> = {
+    shows_add: '/(app)/shows/add',
+    contacts_add: '/(app)/contacts/add',
+    deals_add: '/(app)/deals/add',
+    assets_add: '/(app)/assets-add',
+  };
+
+  const handleRestoreDraft = () => {
+    if (!pendingDraft) return;
+    const route = DRAFT_ROUTES[pendingDraft.key];
+    setPendingDraft(null);
+    if (route) router.push(`${route}?restore=1` as any);
+  };
+
+  const handleDiscardDraft = () => {
+    if (!pendingDraft) return;
+    clearDraft(pendingDraft.key);
+    setPendingDraft(null);
+  };
+
   const onRefresh = async () => {
     setRefreshing(true);
     setTimeout(() => setRefreshing(false), 1000);
@@ -373,6 +403,15 @@ export default function Dashboard() {
           </Text>
         </View>
       </View>
+
+      {pendingDraft && (
+        <DraftRestorePrompt
+          draftKey={pendingDraft.key}
+          ts={pendingDraft.ts}
+          onRestore={handleRestoreDraft}
+          onDiscard={handleDiscardDraft}
+        />
+      )}
 
       {role === 'artist' ? (
         <ArtistDashboard profile={profile} isWide={isWide} />

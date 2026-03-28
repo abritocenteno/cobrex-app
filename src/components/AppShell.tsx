@@ -6,6 +6,8 @@ import { View, Text, TouchableOpacity, ScrollView, useWindowDimensions, Platform
 import { Colors } from '../constants/colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
+import { useSessionTimeout } from '../hooks/useSessionTimeout';
+import SessionTimeoutBanner from './SessionTimeoutBanner';
 
 const NAV_ITEMS_ARTIST = [
   { label: 'Dashboard', icon: '⚡', route: '/(app)/dashboard' },
@@ -111,6 +113,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const { showWarning, secondsRemaining, resetTimer } = useSessionTimeout();
+
   // Onboarding and role-selection render without any nav chrome
   const isCleanPath = CLEAN_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'));
   if (isCleanPath) {
@@ -125,7 +129,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <SafeAreaView style={{ flex: 1 }}><NavContent /></SafeAreaView>
         </View>
         <View style={{ flex: 1 }}>
-          <SafeAreaView style={{ flex: 1 }}>{children}</SafeAreaView>
+          <SafeAreaView style={{ flex: 1 }}>
+            {showWarning && <SessionTimeoutBanner secondsRemaining={secondsRemaining} onKeepAlive={resetTimer} />}
+            {children}
+          </SafeAreaView>
         </View>
       </View>
     );
@@ -167,7 +174,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </SafeAreaView>
         </View>
         <View style={{ flex: 1 }}>
-          <SafeAreaView style={{ flex: 1 }}>{children}</SafeAreaView>
+          <SafeAreaView style={{ flex: 1 }}>
+            {showWarning && <SessionTimeoutBanner secondsRemaining={secondsRemaining} onKeepAlive={resetTimer} />}
+            {children}
+          </SafeAreaView>
         </View>
       </View>
     );
@@ -202,6 +212,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <Text style={{ fontFamily: 'BebasNeue_400Regular', fontSize: 22, letterSpacing: 4, color: Colors.accent, flex: 1 }}>COBREX</Text>
         </View>
 
+        {showWarning && <SessionTimeoutBanner secondsRemaining={secondsRemaining} onKeepAlive={resetTimer} />}
         <View style={{ flex: 1 }}>{children}</View>
 
         {/* Bottom tabs */}

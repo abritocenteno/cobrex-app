@@ -1,16 +1,20 @@
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import DatePickerField from '../../../src/components/DatePickerField';
 import { Colors } from '../../../src/constants/colors';
 import ScreenContainer from '../../../src/components/ScreenContainer';
 import Toast from '../../../src/components/Toast';
 import { useToast } from '../../../src/hooks/useToast';
+import { useDraftSave, getDraft } from '../../../src/hooks/useDraftSave';
+
+const DRAFT_KEY = 'shows_add';
 
 export default function AddShow() {
   const router = useRouter();
+  const { restore } = useLocalSearchParams<{ restore?: string }>();
   const profile = useQuery(api.users.myProfile);
   const createShow = useMutation(api.shows.create);
 
@@ -25,6 +29,28 @@ export default function AddShow() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { toast, showToast, hideToast } = useToast();
+
+  // Restore draft if navigated here with ?restore=1
+  useEffect(() => {
+    if (restore !== '1') return;
+    const draft = getDraft(DRAFT_KEY);
+    if (!draft) return;
+    const v = draft.values as Record<string, string>;
+    if (v.name) setName(v.name);
+    if (v.showDate) setShowDate(v.showDate);
+    if (v.showTime) setShowTime(v.showTime);
+    if (v.loadInTime) setLoadInTime(v.loadInTime);
+    if (v.soundcheckTime) setSoundcheckTime(v.soundcheckTime);
+    if (v.doorsTime) setDoorsTime(v.doorsTime);
+    if (v.setLength) setSetLength(v.setLength);
+    if (v.notes) setNotes(v.notes);
+    showToast('Draft restored');
+  // run once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Auto-save draft while editing
+  const { clearDraft } = useDraftSave(DRAFT_KEY, { name, showDate, showTime, loadInTime, soundcheckTime, doorsTime, setLength, notes });
 
   const handleCreate = async () => {
     if (!profile?.artistId) return;
@@ -44,6 +70,7 @@ export default function AddShow() {
         setLengthMinutes: setLength ? parseInt(setLength) : undefined,
         notes: notes || undefined,
       });
+      clearDraft();
       showToast('Show created successfully!');
       setTimeout(() => router.back(), 800);
     } catch (e: any) {
