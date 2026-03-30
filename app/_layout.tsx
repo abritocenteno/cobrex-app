@@ -15,6 +15,7 @@ import {
 import { BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
 import { View, ActivityIndicator } from 'react-native';
 import { Colors } from '../src/constants/colors';
+import { CookieBanner } from '../src/components/CookieBanner';
 
 const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!);
 
@@ -66,7 +67,10 @@ export default function RootLayout() {
     >
       <ClerkLoaded>
         <ConvexClerkProvider>
-          <Slot />
+          <View style={{ flex: 1 }}>
+            <Slot />
+            <CookieBanner />
+          </View>
         </ConvexClerkProvider>
       </ClerkLoaded>
     </ClerkProvider>

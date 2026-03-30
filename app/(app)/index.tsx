@@ -13,8 +13,11 @@ export default function AppIndex() {
     if (profile === undefined) return;
     if (profile === null || !profile.role) {
       router.replace('/(app)/role-selection');
-    } else if (!profile.onboardingDone && profile.role === 'artist') {
-      router.replace('/(app)/onboarding');
+    } else if (!profile.onboardingDone) {
+      if (profile.role === 'artist') router.replace('/(app)/onboarding');
+      else if (profile.role === 'manager') router.replace('/(app)/onboarding/manager');
+      else if (profile.role === 'venue') router.replace('/(app)/onboarding/venue');
+      else router.replace('/(app)/dashboard');
     } else {
       router.replace('/(app)/dashboard');
     }
