@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
+import { FontAwesome } from '@expo/vector-icons';
 
 interface Props {
   step: number;
@@ -18,8 +19,8 @@ export default function OnboardingHeader({ step, totalSteps, title, subtitle, on
     <View style={{ paddingHorizontal: 24, paddingTop: 20, paddingBottom: 8, maxWidth: 560, width: '100%', alignSelf: 'center' }}>
       {/* Progress */}
       <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20, gap: 10 }}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 15, color: Colors.textMuted }}>←</Text>
+        <TouchableOpacity onPress={() => router.back()} style={{ padding: 2 }}>
+          <FontAwesome name="chevron-left" size={18} color={Colors.textPrimary} />
         </TouchableOpacity>
         <View style={{ flex: 1, height: 4, backgroundColor: Colors.surface2, borderRadius: 2, overflow: 'hidden' }}>
           <View style={{ height: 4, width: `${pct}%`, backgroundColor: Colors.accent, borderRadius: 2 }} />

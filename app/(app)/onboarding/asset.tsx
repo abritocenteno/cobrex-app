@@ -7,12 +7,13 @@ import * as DocumentPicker from 'expo-document-picker';
 import { Colors } from '../../../src/constants/colors';
 import OnboardingHeader from '../../../src/components/OnboardingHeader';
 import { useMutation as useConvexMutation } from 'convex/react';
+import { FontAwesome } from '@expo/vector-icons';
 
 const COMMON_ASSETS = [
-  { value: 'tech_rider', label: '🎚️ Tech Rider' },
-  { value: 'stage_plot', label: '🗺️ Stage Plot' },
-  { value: 'press_kit', label: '📰 Press Kit' },
-  { value: 'press_photo', label: '📷 Press Photo' },
+  { value: 'tech_rider', label: 'Tech Rider', icon: 'sliders' },
+  { value: 'stage_plot', label: 'Stage Plot', icon: 'map' },
+  { value: 'press_kit', label: 'Press Kit', icon: 'newspaper-o' },
+  { value: 'press_photo', label: 'Press Photo', icon: 'camera' },
 ];
 
 export default function OnboardingAsset() {
@@ -84,8 +85,9 @@ export default function OnboardingAsset() {
             <TouchableOpacity
               key={a.value}
               onPress={() => setAssetType(a.value)}
-              style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: assetType === a.value ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: assetType === a.value ? Colors.accent : Colors.border }}
+              style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: assetType === a.value ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: assetType === a.value ? Colors.accent : Colors.border, flexDirection: 'row', alignItems: 'center', gap: 6 }}
             >
+              <FontAwesome name={a.icon as any} size={12} color={assetType === a.value ? '#000' : Colors.textMuted} />
               <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 13, color: assetType === a.value ? '#000' : Colors.textMuted }}>{a.label}</Text>
             </TouchableOpacity>
           ))}
@@ -93,11 +95,13 @@ export default function OnboardingAsset() {
 
         {/* Mode toggle */}
         <View style={{ flexDirection: 'row', backgroundColor: Colors.surface2, borderRadius: 10, padding: 4, marginBottom: 20, borderWidth: 1, borderColor: Colors.border }}>
-          <TouchableOpacity onPress={() => setMode('link')} style={{ flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: mode === 'link' ? Colors.accent : 'transparent', alignItems: 'center' }}>
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: mode === 'link' ? '#000' : Colors.textMuted }}>🔗 Link URL</Text>
+          <TouchableOpacity onPress={() => setMode('link')} style={{ flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: mode === 'link' ? Colors.accent : 'transparent', alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}>
+            <FontAwesome name="link" size={13} color={mode === 'link' ? '#000' : Colors.textMuted} />
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: mode === 'link' ? '#000' : Colors.textMuted }}>Link URL</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setMode('upload')} style={{ flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: mode === 'upload' ? Colors.accent : 'transparent', alignItems: 'center' }}>
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: mode === 'upload' ? '#000' : Colors.textMuted }}>📤 Upload</Text>
+          <TouchableOpacity onPress={() => setMode('upload')} style={{ flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: mode === 'upload' ? Colors.accent : 'transparent', alignItems: 'center', flexDirection: 'row', justifyContent: 'center', gap: 6 }}>
+            <FontAwesome name="cloud" size={13} color={mode === 'upload' ? '#000' : Colors.textMuted} />
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: mode === 'upload' ? '#000' : Colors.textMuted }}>Upload</Text>
           </TouchableOpacity>
         </View>
 
@@ -111,7 +115,7 @@ export default function OnboardingAsset() {
           </>
         ) : (
           <TouchableOpacity onPress={handlePickFile} style={{ backgroundColor: Colors.surface2, borderWidth: 1, borderColor: selectedFile ? Colors.accent : Colors.border, borderRadius: 12, padding: 20, alignItems: 'center', marginBottom: 16, borderStyle: 'dashed' }}>
-            <Text style={{ fontSize: 32, marginBottom: 8 }}>{selectedFile ? '📄' : '📤'}</Text>
+            <FontAwesome name={selectedFile ? 'file-text-o' : 'cloud'} size={32} color={selectedFile ? Colors.accent : Colors.textMuted} style={{ marginBottom: 8 }} />
             <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 14, color: Colors.textPrimary }}>
               {selectedFile ? selectedFile.name : 'Choose a file'}
             </Text>
@@ -125,7 +129,7 @@ export default function OnboardingAsset() {
           disabled={loading}
           style={{ backgroundColor: Colors.accent, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginBottom: 12 }}
         >
-          {loading ? <ActivityIndicator color="#000" /> : <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 15, color: '#000' }}>Finish Setup 🎉</Text>}
+          {loading ? <ActivityIndicator color="#000" /> : <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 15, color: '#000' }}>Finish Setup</Text>}
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => handleFinish(true)} style={{ alignItems: 'center', paddingVertical: 12 }}>

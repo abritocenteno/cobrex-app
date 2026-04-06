@@ -2,6 +2,7 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Colors } from '../../src/constants/colors';
+import { FontAwesome } from '@expo/vector-icons';
 
 export default function VenueRequestsScreen() {
   const profile = useQuery(api.users.myProfile);
@@ -34,7 +35,7 @@ export default function VenueRequestsScreen() {
           <ActivityIndicator color={Colors.accent} style={{ marginTop: 40 }} />
         ) : upcomingShows.length === 0 ? (
           <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 40, alignItems: 'center' }}>
-            <Text style={{ fontSize: 40, marginBottom: 16 }}>🏛️</Text>
+            <FontAwesome name="building" size={40} color={Colors.textMuted} style={{ marginBottom: 16 }} />
             <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 16, color: Colors.textPrimary, marginBottom: 8 }}>No upcoming shows</Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.textMuted, textAlign: 'center' }}>Upcoming shows linked to your venue will appear here</Text>
           </View>
@@ -65,8 +66,9 @@ export default function VenueRequestsScreen() {
                       <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 12, color: '#000' }}>Confirm</Text>
                     </TouchableOpacity>
                   ) : (
-                    <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: `${Colors.green}18` }}>
-                      <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 11, color: Colors.green }}>✓ Confirmed</Text>
+                    <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: `${Colors.green}18`, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <FontAwesome name="check" size={10} color={Colors.green} />
+                      <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 11, color: Colors.green }}>Confirmed</Text>
                     </View>
                   )}
                 </View>
@@ -80,9 +82,10 @@ export default function VenueRequestsScreen() {
                     { label: 'Hospitality', received: vs.hospitalityRiderReceived },
                     { label: 'Settlement', received: vs.settlementPaid },
                   ].map((item) => (
-                    <View key={item.label} style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: item.received ? `${Colors.green}18` : Colors.surface2, borderWidth: 1, borderColor: item.received ? `${Colors.green}40` : Colors.border }}>
+                    <View key={item.label} style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: item.received ? `${Colors.green}18` : Colors.surface2, borderWidth: 1, borderColor: item.received ? `${Colors.green}40` : Colors.border, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      {item.received && <FontAwesome name="check" size={9} color={Colors.green} />}
                       <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 11, color: item.received ? Colors.green : Colors.textMuted }}>
-                        {item.received ? '✓ ' : ''}{item.label}
+                        {item.label}
                       </Text>
                     </View>
                   ))}

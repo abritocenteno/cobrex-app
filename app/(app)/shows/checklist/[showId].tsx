@@ -4,16 +4,17 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, TextInput } from 'react-native';
 import { Colors } from '../../../../src/constants/colors';
+import { FontAwesome } from '@expo/vector-icons';
 
 const CATEGORIES = ['production', 'logistics', 'hospitality', 'promotion', 'finance', 'other'];
 
 const CATEGORY_ICONS: Record<string, string> = {
-  production: '🎚️',
-  logistics: '🚛',
-  hospitality: '🍽️',
-  promotion: '📣',
-  finance: '💰',
-  other: '📋',
+  production: 'sliders',
+  logistics: 'truck',
+  hospitality: 'cutlery',
+  promotion: 'bullhorn',
+  finance: 'money',
+  other: 'clipboard',
 };
 
 export default function ShowChecklist() {
@@ -64,8 +65,9 @@ export default function ShowChecklist() {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bg }}>
       <View style={{ padding: 20, paddingTop: 16, borderBottomWidth: 1, borderBottomColor: Colors.border }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 12 }}>
-          <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 15, color: Colors.accent }}>← Show</Text>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <FontAwesome name="chevron-left" size={14} color={Colors.accent} />
+          <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 15, color: Colors.accent }}>Show</Text>
         </TouchableOpacity>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
           <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 22, color: Colors.textPrimary, flex: 1 }}>Checklist</Text>
@@ -74,7 +76,7 @@ export default function ShowChecklist() {
             style={{ backgroundColor: Colors.accent, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10 }}
           >
             <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: '#000' }}>
-              {showAddForm ? '✕ Cancel' : '+ Add Item'}
+              {showAddForm ? 'Cancel' : '+ Add Item'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -108,10 +110,11 @@ export default function ShowChecklist() {
                   <TouchableOpacity
                     key={cat}
                     onPress={() => setNewCategory(cat)}
-                    style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: newCategory === cat ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: newCategory === cat ? Colors.accent : Colors.border }}
+                    style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: newCategory === cat ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: newCategory === cat ? Colors.accent : Colors.border, flexDirection: 'row', alignItems: 'center', gap: 6 }}
                   >
+                    <FontAwesome name={(CATEGORY_ICONS[cat] ?? 'clipboard') as any} size={11} color={newCategory === cat ? '#000' : Colors.textMuted} />
                     <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: newCategory === cat ? '#000' : Colors.textMuted, textTransform: 'capitalize' }}>
-                      {CATEGORY_ICONS[cat]} {cat}
+                      {cat}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -122,7 +125,7 @@ export default function ShowChecklist() {
               style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}
             >
               <View style={{ width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: isCritical ? Colors.accentRed : Colors.textMuted, backgroundColor: isCritical ? Colors.accentRed : 'transparent', justifyContent: 'center', alignItems: 'center' }}>
-                {isCritical && <Text style={{ color: '#fff', fontSize: 11 }}>✓</Text>}
+                {isCritical && <FontAwesome name="check" size={11} color="#fff" />}
               </View>
               <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.textPrimary }}>Critical item</Text>
             </TouchableOpacity>
@@ -142,36 +145,42 @@ export default function ShowChecklist() {
           <ActivityIndicator color={Colors.accent} style={{ marginTop: 40 }} />
         ) : items.length === 0 ? (
           <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 40, alignItems: 'center' }}>
-            <Text style={{ fontSize: 40, marginBottom: 16 }}>📋</Text>
+            <FontAwesome name="clipboard" size={40} color={Colors.textMuted} style={{ marginBottom: 16 }} />
             <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 16, color: Colors.textPrimary, marginBottom: 8 }}>No checklist items</Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.textMuted }}>Add items to track show preparation</Text>
           </View>
         ) : (
           Object.entries(grouped).map(([category, catItems]) => (
             <View key={category} style={{ marginBottom: 24 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 12, color: Colors.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>
-                {CATEGORY_ICONS[category]} {category}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                <FontAwesome name={(CATEGORY_ICONS[category] ?? 'clipboard') as any} size={11} color={Colors.textMuted} />
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 12, color: Colors.textMuted, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+                  {category}
+                </Text>
+              </View>
               {(catItems as any[]).map((item: any) => (
                 <View key={item._id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderWidth: 1, borderColor: item.isChecked ? `${Colors.green}30` : item.isCritical ? `${Colors.accentRed}30` : Colors.border, borderRadius: 12, padding: 14, marginBottom: 8 }}>
                   <TouchableOpacity
                     onPress={() => toggle({ id: item._id, checked: !item.isChecked, checkedByName: profile?.displayName })}
                     style={{ width: 24, height: 24, borderRadius: 6, borderWidth: 2, borderColor: item.isChecked ? Colors.green : Colors.textMuted, backgroundColor: item.isChecked ? Colors.green : 'transparent', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}
                   >
-                    {item.isChecked && <Text style={{ color: '#000', fontSize: 13 }}>✓</Text>}
+                    {item.isChecked && <FontAwesome name="check" size={12} color="#000" />}
                   </TouchableOpacity>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: item.isChecked ? 'DMSans_400Regular' : 'DMSans_500Medium', fontSize: 14, color: item.isChecked ? Colors.textMuted : Colors.textPrimary, textDecorationLine: item.isChecked ? 'line-through' : 'none' }}>
-                      {item.isCritical && !item.isChecked ? '🚨 ' : ''}{item.label}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      {item.isCritical && !item.isChecked && <FontAwesome name="exclamation-circle" size={13} color={Colors.accentRed} />}
+                      <Text style={{ fontFamily: item.isChecked ? 'DMSans_400Regular' : 'DMSans_500Medium', fontSize: 14, color: item.isChecked ? Colors.textMuted : Colors.textPrimary, textDecorationLine: item.isChecked ? 'line-through' : 'none', flex: 1 }}>
+                        {item.label}
+                      </Text>
+                    </View>
                     {item.isChecked && item.checkedByName && (
                       <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 11, color: Colors.textMuted, marginTop: 2 }}>
-                        ✓ {item.checkedByName} · {item.checkedAt ? new Date(item.checkedAt).toLocaleString() : ''}
+                        {item.checkedByName} · {item.checkedAt ? new Date(item.checkedAt).toLocaleString() : ''}
                       </Text>
                     )}
                   </View>
                   <TouchableOpacity onPress={() => remove({ id: item._id })} style={{ padding: 4, marginLeft: 8 }}>
-                    <Text style={{ color: Colors.textMuted, fontSize: 14 }}>🗑️</Text>
+                    <FontAwesome name="times" size={14} color={Colors.textMuted} />
                   </TouchableOpacity>
                 </View>
               ))}

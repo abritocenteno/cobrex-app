@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Colors } from '../constants/colors';
 import { DRAFT_LABELS } from '../hooks/useDraftSave';
+import { FontAwesome } from '@expo/vector-icons';
 
 interface Props {
   draftKey: string;
@@ -27,7 +28,7 @@ export default function DraftRestorePrompt({ draftKey, ts, onRestore, onDiscard 
       flexDirection: 'row',
       alignItems: 'center',
     }}>
-      <Text style={{ fontSize: 22, marginRight: 12 }}>📝</Text>
+      <FontAwesome name="pencil-square-o" size={22} color={Colors.textPrimary} style={{ marginRight: 12 }} />
       <View style={{ flex: 1 }}>
         <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, marginBottom: 2 }}>
           Your session expired

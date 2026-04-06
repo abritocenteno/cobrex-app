@@ -5,11 +5,12 @@ import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { useUser } from '@clerk/clerk-expo';
 import { Colors } from '../../src/constants/colors';
+import { FontAwesome } from '@expo/vector-icons';
 
 const ROLES = [
-  { id: 'artist', label: 'Artist', description: 'Manage your shows, deals, and career', emoji: '🎤' },
-  { id: 'manager', label: 'Manager', description: 'Manage your roster and bookings', emoji: '🎯' },
-  { id: 'venue', label: 'Venue', description: 'Manage your venue and events', emoji: '🏛️' },
+  { id: 'artist', label: 'Artist', description: 'Manage your shows, deals, and career', icon: 'microphone' },
+  { id: 'manager', label: 'Manager', description: 'Manage your roster and bookings', icon: 'bullseye' },
+  { id: 'venue', label: 'Venue', description: 'Manage your venue and events', icon: 'building' },
 ];
 
 function onboardingPath(role: string) {
@@ -111,14 +112,14 @@ export default function RoleSelection() {
                 alignItems: 'center',
               }}
             >
-              <Text style={{ fontSize: 32, marginRight: 16 }}>{role.emoji}</Text>
+              <FontAwesome name={role.icon as any} size={28} color={Colors.accent} style={{ marginRight: 16 }} />
               <View style={{ flex: 1 }}>
                 <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 16, color: Colors.textPrimary, marginBottom: 4 }}>{role.label}</Text>
                 <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.textMuted }}>{role.description}</Text>
               </View>
               {selected === role.id && (
                 <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: Colors.accent, justifyContent: 'center', alignItems: 'center' }}>
-                  <Text style={{ color: '#000', fontSize: 12 }}>✓</Text>
+                  <FontAwesome name="check" size={11} color="#000" />
                 </View>
               )}
             </TouchableOpacity>

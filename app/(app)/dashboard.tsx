@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { SkeletonList, SkeletonStatCards } from '../../src/components/Skeleton';
 import DraftRestorePrompt from '../../src/components/DraftRestorePrompt';
 import { listDrafts, clearDraft } from '../../src/hooks/useDraftSave';
+import { FontAwesome } from '@expo/vector-icons';
 
 function StatCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
@@ -54,7 +55,7 @@ function ArtistDashboard({ profile, isWide }: { profile: any; isWide: boolean })
           onPress={() => router.push('/(app)/alerts')}
           style={{ backgroundColor: `${Colors.accentRed}18`, borderWidth: 1, borderColor: `${Colors.accentRed}40`, borderRadius: 12, padding: 16, marginBottom: 20, flexDirection: 'row', alignItems: 'center' }}
         >
-          <Text style={{ fontSize: 18, marginRight: 12 }}>🚨</Text>
+          <FontAwesome name="exclamation-circle" size={18} color={Colors.accentRed} style={{ marginRight: 12 }} />
           <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 14, color: Colors.accentRed, flex: 1 }}>
             {activeAlerts.length} active alert{activeAlerts.length > 1 ? 's' : ''} — tap to review
           </Text>
@@ -83,7 +84,7 @@ function ArtistDashboard({ profile, isWide }: { profile: any; isWide: boolean })
             onPress={() => router.push('/(app)/shows/add')}
             style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 32, alignItems: 'center' }}
           >
-            <Text style={{ fontSize: 32, marginBottom: 12 }}>🎤</Text>
+            <FontAwesome name="microphone" size={32} color={Colors.textMuted} style={{ marginBottom: 12 }} />
             <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary, marginBottom: 4 }}>No upcoming shows</Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.accent }}>Tap to add your first show →</Text>
           </TouchableOpacity>
@@ -95,7 +96,7 @@ function ArtistDashboard({ profile, isWide }: { profile: any; isWide: boolean })
               style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, padding: 16, marginBottom: 10, flexDirection: 'row', alignItems: 'center' }}
             >
               <View style={{ width: 48, height: 48, borderRadius: 10, backgroundColor: `${Colors.accent}18`, justifyContent: 'center', alignItems: 'center', marginRight: 14 }}>
-                <Text style={{ fontSize: 22 }}>🎤</Text>
+                <FontAwesome name="microphone" size={22} color={Colors.accent} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary, marginBottom: 2 }}>{show.name}</Text>
@@ -157,7 +158,7 @@ function ManagerDashboard({ profile, isWide }: { profile: any; isWide: boolean }
           <SkeletonList count={3} />
         ) : roster.length === 0 ? (
           <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 32, alignItems: 'center' }}>
-            <Text style={{ fontSize: 32, marginBottom: 12 }}>👥</Text>
+            <FontAwesome name="users" size={32} color={Colors.textMuted} style={{ marginBottom: 12 }} />
             <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary, marginBottom: 4 }}>No artists yet</Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.textMuted }}>Roster invitations will appear here</Text>
           </View>
@@ -206,18 +207,18 @@ function ManagerDashboard({ profile, isWide }: { profile: any; isWide: boolean }
       {/* Quick links */}
       <View style={{ flexDirection: isWide ? 'row' : 'column', gap: 12, marginBottom: 28 }}>
         {[
-          { icon: '👥', label: 'Roster', route: '/(app)/roster' },
-          { icon: '🤝', label: 'Deals', route: '/(app)/deals' },
-          { icon: '🎤', label: 'Shows', route: '/(app)/shows' },
+          { icon: 'users' as const, label: 'Roster', route: '/(app)/roster' },
+          { icon: 'handshake-o' as const, label: 'Deals', route: '/(app)/deals' },
+          { icon: 'microphone' as const, label: 'Shows', route: '/(app)/shows' },
         ].map((item) => (
           <TouchableOpacity
             key={item.route}
             onPress={() => router.push(item.route as any)}
             style={{ flex: 1, backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 14, padding: 18, flexDirection: 'row', alignItems: 'center', gap: 12 }}
           >
-            <Text style={{ fontSize: 22 }}>{item.icon}</Text>
+            <FontAwesome name={item.icon} size={22} color={Colors.textPrimary} />
             <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, flex: 1 }}>{item.label}</Text>
-            <Text style={{ color: Colors.textMuted }}>→</Text>
+            <FontAwesome name="chevron-right" size={14} color={Colors.textMuted} />
           </TouchableOpacity>
         ))}
       </View>
@@ -258,7 +259,7 @@ function VenueDashboard({ profile, isWide }: { profile: any; isWide: boolean }) 
       {/* Venue info banner */}
       {venueProfile ? (
         <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 14, padding: 18, marginBottom: 24, flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={{ fontSize: 28, marginRight: 14 }}>🏛️</Text>
+          <FontAwesome name="building" size={28} color={Colors.textPrimary} style={{ marginRight: 14 }} />
           <View style={{ flex: 1 }}>
             <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 16, color: Colors.textPrimary, marginBottom: 2 }}>{venueProfile.name}</Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted }}>
@@ -276,7 +277,7 @@ function VenueDashboard({ profile, isWide }: { profile: any; isWide: boolean }) 
           <SkeletonList count={3} />
         ) : upcomingShows.length === 0 ? (
           <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 32, alignItems: 'center' }}>
-            <Text style={{ fontSize: 32, marginBottom: 12 }}>🏛️</Text>
+            <FontAwesome name="building" size={32} color={Colors.textMuted} style={{ marginBottom: 12 }} />
             <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary, marginBottom: 4 }}>No upcoming shows</Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.textMuted }}>Shows linked to your venue will appear here</Text>
           </View>
@@ -296,7 +297,7 @@ function VenueDashboard({ profile, isWide }: { profile: any; isWide: boolean }) 
                   </View>
                   <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: vs.confirmedByVenue ? `${Colors.green}18` : `${Colors.orange}18` }}>
                     <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 11, color: vs.confirmedByVenue ? Colors.green : Colors.orange }}>
-                      {vs.confirmedByVenue ? '✓ Confirmed' : 'Pending'}
+                      {vs.confirmedByVenue ? 'Confirmed' : 'Pending'}
                     </Text>
                   </View>
                 </View>
@@ -308,7 +309,7 @@ function VenueDashboard({ profile, isWide }: { profile: any; isWide: boolean }) 
                   ].map((r) => (
                     <View key={r.label} style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, backgroundColor: r.ok ? `${Colors.green}18` : Colors.surface2, borderWidth: 1, borderColor: r.ok ? `${Colors.green}30` : Colors.border }}>
                       <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 10, color: r.ok ? Colors.green : Colors.textMuted }}>
-                        {r.ok ? '✓ ' : ''}{r.label}
+                        {r.label}
                       </Text>
                     </View>
                   ))}
@@ -324,9 +325,9 @@ function VenueDashboard({ profile, isWide }: { profile: any; isWide: boolean }) 
         onPress={() => router.push('/(app)/requests')}
         style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 14, padding: 18, flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 28 }}
       >
-        <Text style={{ fontSize: 22 }}>📬</Text>
+        <FontAwesome name="envelope" size={22} color={Colors.textPrimary} />
         <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, flex: 1 }}>Manage All Requests</Text>
-        <Text style={{ color: Colors.textMuted }}>→</Text>
+        <FontAwesome name="chevron-right" size={14} color={Colors.textMuted} />
       </TouchableOpacity>
     </>
   );

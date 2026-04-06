@@ -3,16 +3,17 @@ import { api } from '../../convex/_generated/api';
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { Colors } from '../../src/constants/colors';
 import EmptyState from '../../src/components/EmptyState';
+import { FontAwesome } from '@expo/vector-icons';
 
 const TYPE_ICONS: Record<string, string> = {
-  show_reminder: '🎤',
-  payment_received: '💰',
-  payment_due: '��',
-  contract_signed: '📄',
-  booking_request: '��',
-  alert: '🚨',
-  info: 'ℹ️',
-  success: '✅',
+  show_reminder: 'microphone',
+  payment_received: 'money',
+  payment_due: 'money',
+  contract_signed: 'file-text-o',
+  booking_request: 'envelope',
+  alert: 'exclamation-circle',
+  info: 'info-circle',
+  success: 'check-circle',
 };
 
 export default function NotificationsScreen() {
@@ -45,7 +46,7 @@ export default function NotificationsScreen() {
         {notifications === undefined ? (
           <ActivityIndicator color={Colors.accent} style={{ marginTop: 40 }} />
         ) : notifications.length === 0 ? (
-          <EmptyState icon="🔔" title="No notifications" message="You're all caught up! Check back later." />
+          <EmptyState icon="bell" title="No notifications" message="You're all caught up! Check back later." />
         ) : (
           notifications.map((n: any) => (
             <View
@@ -61,9 +62,7 @@ export default function NotificationsScreen() {
                 alignItems: 'flex-start',
               }}
             >
-              <Text style={{ fontSize: 20, marginRight: 12, marginTop: 2 }}>
-                {TYPE_ICONS[n.type] ?? 'ℹ️'}
-              </Text>
+              <FontAwesome name={(TYPE_ICONS[n.type] ?? 'info-circle') as any} size={20} color={Colors.textPrimary} style={{ marginRight: 12, marginTop: 2 }} />
               <View style={{ flex: 1 }}>
                 <Text style={{ fontFamily: n.isRead ? 'DMSans_400Regular' : 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, marginBottom: 4 }}>
                   {n.title}
@@ -81,7 +80,7 @@ export default function NotificationsScreen() {
                 onPress={() => dismiss({ id: n._id })}
                 style={{ padding: 4, marginLeft: 8 }}
               >
-                <Text style={{ color: Colors.textMuted, fontSize: 16 }}>✕</Text>
+                <FontAwesome name="times" size={16} color={Colors.textMuted} />
               </TouchableOpacity>
             </View>
           ))

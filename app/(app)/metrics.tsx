@@ -3,15 +3,16 @@ import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { View, Text, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import { Colors } from '../../src/constants/colors';
+import { FontAwesome } from '@expo/vector-icons';
 
 const PLATFORM_ICONS: Record<string, string> = {
-  spotify: '🎧',
-  apple_music: '🎵',
-  youtube: '▶️',
-  instagram: '📸',
-  tiktok: '🎬',
-  soundcloud: '☁️',
-  other: '📊',
+  spotify: 'headphones',
+  apple_music: 'music',
+  youtube: 'play-circle',
+  instagram: 'camera',
+  tiktok: 'film',
+  soundcloud: 'cloud',
+  other: 'bar-chart',
 };
 
 const METRIC_LABELS: Record<string, string> = {
@@ -40,7 +41,7 @@ export default function MetricsScreen() {
   if (profile !== undefined && !profile?.artistId) {
     return (
       <View style={{ flex: 1, backgroundColor: Colors.bg, justifyContent: 'center', alignItems: 'center', padding: 32 }}>
-        <Text style={{ fontSize: 40, marginBottom: 16 }}>📊</Text>
+        <FontAwesome name="bar-chart" size={40} color={Colors.textMuted} style={{ marginBottom: 16 }} />
         <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 16, color: Colors.textPrimary, marginBottom: 8, textAlign: 'center' }}>Artist feature only</Text>
         <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.textMuted, textAlign: 'center' }}>This section is only available for artist accounts.</Text>
       </View>
@@ -88,7 +89,7 @@ export default function MetricsScreen() {
           <ActivityIndicator color={Colors.accent} style={{ marginTop: 40 }} />
         ) : metrics.length === 0 ? (
           <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 40, alignItems: 'center' }}>
-            <Text style={{ fontSize: 40, marginBottom: 16 }}>📊</Text>
+            <FontAwesome name="bar-chart" size={40} color={Colors.textMuted} style={{ marginBottom: 16 }} />
             <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 16, color: Colors.textPrimary, marginBottom: 8 }}>No metrics yet</Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.textMuted, textAlign: 'center' }}>Add your first metric snapshot to start tracking</Text>
           </View>
@@ -97,7 +98,7 @@ export default function MetricsScreen() {
             <View key={platform} style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 20, marginBottom: 16 }}>
               {/* Platform header */}
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-                <Text style={{ fontSize: 24, marginRight: 10 }}>{PLATFORM_ICONS[platform] ?? '📊'}</Text>
+                <FontAwesome name={(PLATFORM_ICONS[platform] ?? 'bar-chart') as any} size={24} color={Colors.textPrimary} style={{ marginRight: 10 }} />
                 <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 16, color: Colors.textPrimary, textTransform: 'capitalize' }}>
                   {platform.replace(/_/g, ' ')}
                 </Text>

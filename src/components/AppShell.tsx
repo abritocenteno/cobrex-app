@@ -8,36 +8,37 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
 import { useSessionTimeout } from '../hooks/useSessionTimeout';
 import SessionTimeoutBanner from './SessionTimeoutBanner';
+import { FontAwesome } from '@expo/vector-icons';
 
 const NAV_ITEMS_ARTIST = [
-  { label: 'Dashboard', icon: '⚡', route: '/(app)/dashboard' },
-  { label: 'Shows', icon: '🎤', route: '/(app)/shows' },
-  { label: 'Contacts', icon: '👥', route: '/(app)/contacts' },
-  { label: 'Deals', icon: '🤝', route: '/(app)/deals' },
-  { label: 'Assets', icon: '📁', route: '/(app)/assets' },
-  { label: 'Setlist', icon: '🎵', route: '/(app)/setlist' },
-  { label: 'Metrics', icon: '📊', route: '/(app)/metrics' },
-  { label: 'Alerts', icon: '🔔', route: '/(app)/alerts' },
-  { label: 'Notifications', icon: '📬', route: '/(app)/notifications' },
-  { label: 'Profile', icon: '👤', route: '/(app)/profile' },
+  { label: 'Dashboard', icon: 'bolt', route: '/(app)/dashboard' },
+  { label: 'Shows', icon: 'microphone', route: '/(app)/shows' },
+  { label: 'Contacts', icon: 'users', route: '/(app)/contacts' },
+  { label: 'Deals', icon: 'handshake-o', route: '/(app)/deals' },
+  { label: 'Assets', icon: 'folder', route: '/(app)/assets' },
+  { label: 'Setlist', icon: 'music', route: '/(app)/setlist' },
+  { label: 'Metrics', icon: 'bar-chart', route: '/(app)/metrics' },
+  { label: 'Alerts', icon: 'bell', route: '/(app)/alerts' },
+  { label: 'Notifications', icon: 'envelope', route: '/(app)/notifications' },
+  { label: 'Profile', icon: 'user', route: '/(app)/profile' },
 ];
 
 const NAV_ITEMS_MANAGER = [
-  { label: 'Dashboard', icon: '⚡', route: '/(app)/dashboard' },
-  { label: 'Roster', icon: '👥', route: '/(app)/roster' },
-  { label: 'Shows', icon: '🎤', route: '/(app)/shows' },
-  { label: 'Deals', icon: '🤝', route: '/(app)/deals' },
-  { label: 'Metrics', icon: '📊', route: '/(app)/metrics' },
-  { label: 'Notifications', icon: '📬', route: '/(app)/notifications' },
-  { label: 'Profile', icon: '👤', route: '/(app)/profile' },
+  { label: 'Dashboard', icon: 'bolt', route: '/(app)/dashboard' },
+  { label: 'Roster', icon: 'users', route: '/(app)/roster' },
+  { label: 'Shows', icon: 'microphone', route: '/(app)/shows' },
+  { label: 'Deals', icon: 'handshake-o', route: '/(app)/deals' },
+  { label: 'Metrics', icon: 'bar-chart', route: '/(app)/metrics' },
+  { label: 'Notifications', icon: 'envelope', route: '/(app)/notifications' },
+  { label: 'Profile', icon: 'user', route: '/(app)/profile' },
 ];
 
 const NAV_ITEMS_VENUE = [
-  { label: 'Dashboard', icon: '⚡', route: '/(app)/dashboard' },
-  { label: 'Shows', icon: '🎤', route: '/(app)/shows' },
-  { label: 'Requests', icon: '📬', route: '/(app)/requests' },
-  { label: 'Notifications', icon: '📬', route: '/(app)/notifications' },
-  { label: 'Profile', icon: '👤', route: '/(app)/profile' },
+  { label: 'Dashboard', icon: 'bolt', route: '/(app)/dashboard' },
+  { label: 'Shows', icon: 'microphone', route: '/(app)/shows' },
+  { label: 'Requests', icon: 'envelope', route: '/(app)/requests' },
+  { label: 'Notifications', icon: 'envelope', route: '/(app)/notifications' },
+  { label: 'Profile', icon: 'user', route: '/(app)/profile' },
 ];
 
 function NavContent({ onNavigate }: { onNavigate?: () => void }) {
@@ -71,7 +72,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
               onPress={() => handleNav(item.route)}
               style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 11, marginHorizontal: 8, marginBottom: 2, borderRadius: 10, backgroundColor: isActive ? `${Colors.accent}18` : 'transparent' }}
             >
-              <Text style={{ fontSize: 16, marginRight: 12 }}>{item.icon}</Text>
+              <FontAwesome name={item.icon as any} size={16} color={isActive ? Colors.accent : Colors.textMuted} style={{ marginRight: 12, width: 20, textAlign: 'center' }} />
               <Text style={{ fontFamily: isActive ? 'DMSans_600SemiBold' : 'DMSans_400Regular', fontSize: 14, color: isActive ? Colors.textPrimary : Colors.textMuted, flex: 1 }}>
                 {item.label}
               </Text>
@@ -158,7 +159,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                       onPress={() => router.push(item.route as any)}
                       style={{ alignItems: 'center', paddingVertical: 12, marginHorizontal: 8, marginBottom: 2, borderRadius: 10, backgroundColor: isActive ? `${Colors.accent}18` : 'transparent' }}
                     >
-                      <Text style={{ fontSize: 20 }}>{item.icon}</Text>
+                      <FontAwesome name={item.icon as any} size={20} color={isActive ? Colors.accent : Colors.textMuted} />
                     </TouchableOpacity>
                   );
                 })}
@@ -168,7 +169,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 onPress={() => signOut()}
                 style={{ alignItems: 'center', paddingVertical: 12, marginBottom: 8 }}
               >
-                <Text style={{ fontSize: 18 }}>🚪</Text>
+                <FontAwesome name="sign-out" size={18} color={Colors.textMuted} />
               </TouchableOpacity>
             </View>
           </SafeAreaView>
@@ -193,7 +194,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <SafeAreaView style={{ flex: 1 }}>
               <View style={{ padding: 16, flexDirection: 'row', justifyContent: 'flex-end' }}>
                 <TouchableOpacity onPress={() => setDrawerOpen(false)}>
-                  <Text style={{ color: Colors.textMuted, fontSize: 24 }}>✕</Text>
+                  <FontAwesome name="times" size={20} color={Colors.textMuted} />
                 </TouchableOpacity>
               </View>
               <NavContent onNavigate={() => setDrawerOpen(false)} />
@@ -207,7 +208,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {/* Top bar with hamburger */}
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: Colors.border }}>
           <TouchableOpacity onPress={() => setDrawerOpen(true)} style={{ padding: 8, marginRight: 12, borderRadius: 8, backgroundColor: Colors.surface2 }}>
-            <Text style={{ fontSize: 20, color: Colors.textPrimary }}>☰</Text>
+            <FontAwesome name="bars" size={20} color={Colors.textPrimary} />
           </TouchableOpacity>
           <Text style={{ fontFamily: 'BebasNeue_400Regular', fontSize: 22, letterSpacing: 4, color: Colors.accent, flex: 1 }}>COBREX</Text>
         </View>
@@ -221,7 +222,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             const isActive = pathname === item.route;
             return (
               <TouchableOpacity key={item.route} onPress={() => router.push(item.route as any)} style={{ flex: 1, alignItems: 'center', paddingVertical: 10 }}>
-                <Text style={{ fontSize: 20 }}>{item.icon}</Text>
+                <FontAwesome name={item.icon as any} size={20} color={isActive ? Colors.accent : Colors.textMuted} />
                 <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 10, color: isActive ? Colors.accent : Colors.textMuted, marginTop: 2 }}>{item.label}</Text>
               </TouchableOpacity>
             );

@@ -5,17 +5,18 @@ import { View, Text, ScrollView, ActivityIndicator, RefreshControl, TouchableOpa
 import { Colors } from '../../src/constants/colors';
 import EmptyState from '../../src/components/EmptyState';
 import { useState } from 'react';
+import { FontAwesome } from '@expo/vector-icons';
 
 const ASSET_TYPE_ICONS: Record<string, string> = {
-  tech_rider: '🎚️',
-  stage_plot: '��️',
-  press_photo: '📷',
-  press_kit: '📰',
-  contract: '📄',
-  invoice: '🧾',
-  setlist: '🎵',
-  hospitality_rider: '🍽️',
-  other: '📁',
+  tech_rider: 'sliders',
+  stage_plot: 'map',
+  press_photo: 'camera',
+  press_kit: 'newspaper-o',
+  contract: 'file-text-o',
+  invoice: 'file-text-o',
+  setlist: 'music',
+  hospitality_rider: 'cutlery',
+  other: 'folder',
 };
 
 const ASSET_TYPE_LABELS: Record<string, string> = {
@@ -88,10 +89,11 @@ export default function AssetsScreen() {
               <TouchableOpacity
                 key={t}
                 onPress={() => setTypeFilter(t)}
-                style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: typeFilter === t ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: typeFilter === t ? Colors.accent : Colors.border }}
+                style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: typeFilter === t ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: typeFilter === t ? Colors.accent : Colors.border, flexDirection: 'row', alignItems: 'center', gap: 6 }}
               >
+                {t !== 'all' && <FontAwesome name={(ASSET_TYPE_ICONS[t] ?? 'folder') as any} size={11} color={typeFilter === t ? '#000' : Colors.textMuted} />}
                 <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: typeFilter === t ? '#000' : Colors.textMuted }}>
-                  {t === 'all' ? 'All' : `${ASSET_TYPE_ICONS[t] ?? '📁'} ${ASSET_TYPE_LABELS[t] ?? t}`}
+                  {t === 'all' ? 'All' : ASSET_TYPE_LABELS[t] ?? t}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -104,7 +106,7 @@ export default function AssetsScreen() {
           <ActivityIndicator color={Colors.accent} style={{ marginTop: 40 }} />
         ) : filtered.length === 0 ? (
           <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 40, alignItems: 'center' }}>
-            <Text style={{ fontSize: 40, marginBottom: 16 }}>��</Text>
+            <FontAwesome name="folder" size={40} color={Colors.textMuted} style={{ marginBottom: 16 }} />
             <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 16, color: Colors.textPrimary, marginBottom: 8 }}>No assets found</Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.textMuted }}>Upload your first file to get started</Text>
           </View>
@@ -112,9 +114,12 @@ export default function AssetsScreen() {
           // Grouped view
           Object.entries(grouped).map(([type, items]) => (
             <View key={type} style={{ marginBottom: 24 }}>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: Colors.textMuted, letterSpacing: 1.5, marginBottom: 12, textTransform: 'uppercase' }}>
-                {ASSET_TYPE_ICONS[type] ?? '📁'} {ASSET_TYPE_LABELS[type] ?? type} ({items.length})
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                <FontAwesome name={(ASSET_TYPE_ICONS[type] ?? 'folder') as any} size={12} color={Colors.textMuted} />
+                <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: Colors.textMuted, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+                  {ASSET_TYPE_LABELS[type] ?? type} ({items.length})
+                </Text>
+              </View>
               {items.map((asset: any) => <AssetCard key={asset._id} asset={asset} />)}
             </View>
           ))
@@ -152,13 +157,13 @@ function AssetCard({ asset }: { asset: any }) {
         style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}
       >
         <View style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: `${Colors.accent}18`, justifyContent: 'center', alignItems: 'center', marginRight: 14 }}>
-          <Text style={{ fontSize: 22 }}>{ASSET_TYPE_ICONS[asset.assetType] ?? '📁'}</Text>
+          <FontAwesome name={(ASSET_TYPE_ICONS[asset.assetType] ?? 'folder') as any} size={22} color={Colors.accent} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, marginBottom: 2 }}>{asset.name}</Text>
           <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 11, color: Colors.textMuted }}>
             v{asset.versionNumber} · {asset.fileSizeBytes ? formatBytes(asset.fileSizeBytes) : 'Link'}
-            {asset.isPublic ? ' · 🔗 Shared' : ''}
+            {asset.isPublic ? ' · Shared' : ''}
           </Text>
         </View>
       </TouchableOpacity>
@@ -167,9 +172,7 @@ function AssetCard({ asset }: { asset: any }) {
         disabled={sharing}
         style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: asset.isPublic ? `${Colors.accent}18` : Colors.surface2, borderWidth: 1, borderColor: asset.isPublic ? `${Colors.accent}40` : Colors.border, marginLeft: 8 }}
       >
-        <Text style={{ fontSize: 14, color: asset.isPublic ? Colors.accent : Colors.textMuted }}>
-          {sharing ? '…' : '🔗'}
-        </Text>
+        <FontAwesome name="link" size={14} color={asset.isPublic ? Colors.accent : Colors.textMuted} />
       </TouchableOpacity>
     </View>
   );

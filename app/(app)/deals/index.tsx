@@ -6,9 +6,10 @@ import { Colors } from '../../../src/constants/colors';
 import EmptyState from '../../../src/components/EmptyState';
 import { SkeletonList } from '../../../src/components/Skeleton';
 import { useState } from 'react';
+import { FontAwesome } from '@expo/vector-icons';
 
 const DEAL_TYPE_ICONS: Record<string, string> = {
-  live: '🎤', session: '🎙️', sync: '🎬', sponsorship: '🤝', other: '📄',
+  live: 'microphone', session: 'microphone', sync: 'film', sponsorship: 'handshake-o', other: 'file-text-o',
 };
 
 const PAYMENT_COLORS: Record<string, string> = {
@@ -35,7 +36,7 @@ export default function DealsScreen() {
   if (profile !== undefined && !profile?.artistId) {
     return (
       <View style={{ flex: 1, backgroundColor: Colors.bg, justifyContent: 'center', alignItems: 'center', padding: 32 }}>
-        <Text style={{ fontSize: 40, marginBottom: 16 }}>🤝</Text>
+        <FontAwesome name="handshake-o" size={40} color={Colors.textMuted} style={{ marginBottom: 16 }} />
         <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 16, color: Colors.textPrimary, marginBottom: 8, textAlign: 'center' }}>Artist feature only</Text>
         <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.textMuted, textAlign: 'center' }}>This section is only available for artist accounts.</Text>
       </View>
@@ -94,10 +95,11 @@ export default function DealsScreen() {
               <TouchableOpacity
                 key={f}
                 onPress={() => setFilter(f)}
-                style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: filter === f ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: filter === f ? Colors.accent : Colors.border }}
+                style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: filter === f ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: filter === f ? Colors.accent : Colors.border, flexDirection: 'row', alignItems: 'center', gap: 6 }}
               >
+                {f !== 'all' && <FontAwesome name={(DEAL_TYPE_ICONS[f] ?? 'file-text-o') as any} size={11} color={filter === f ? '#000' : Colors.textMuted} />}
                 <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: filter === f ? '#000' : Colors.textMuted, textTransform: 'capitalize' }}>
-                  {f === 'all' ? 'All' : `${DEAL_TYPE_ICONS[f]} ${f}`}
+                  {f === 'all' ? 'All' : f}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -109,7 +111,7 @@ export default function DealsScreen() {
         {deals === undefined ? (
           <SkeletonList count={3} />
         ) : filtered.length === 0 ? (
-          <EmptyState icon="��" title="No deals found" message={filter === 'all' ? 'Add your first deal to track payments' : `No ${filter} deals`} actionLabel={filter === 'all' ? '+ Add Deal' : undefined} onAction={filter === 'all' ? () => router.push('/(app)/deals/add') : undefined} />
+          <EmptyState icon="handshake-o" title="No deals found" message={filter === 'all' ? 'Add your first deal to track payments' : `No ${filter} deals`} actionLabel={filter === 'all' ? '+ Add Deal' : undefined} onAction={filter === 'all' ? () => router.push('/(app)/deals/add') : undefined} />
         ) : (
           filtered.map((deal: any) => {
             const paymentColor = PAYMENT_COLORS[deal.paymentStatus] ?? Colors.textMuted;
@@ -117,7 +119,7 @@ export default function DealsScreen() {
             return (
               <TouchableOpacity key={deal._id} onPress={() => router.push(`/(app)/deals/${deal._id}` as any)} style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 14, padding: 18, marginBottom: 10 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-                  <Text style={{ fontSize: 24, marginRight: 12 }}>{DEAL_TYPE_ICONS[deal.dealType] ?? '📄'}</Text>
+                  <FontAwesome name={(DEAL_TYPE_ICONS[deal.dealType] ?? 'file-text-o') as any} size={24} color={Colors.textPrimary} style={{ marginRight: 12 }} />
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary, marginBottom: 2, textTransform: 'capitalize' }}>
                       {deal.dealType} Deal

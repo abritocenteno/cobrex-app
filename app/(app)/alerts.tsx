@@ -6,6 +6,7 @@ import { View, Text, ScrollView, ActivityIndicator, RefreshControl, TouchableOpa
 import { Colors } from '../../src/constants/colors';
 import EmptyState from '../../src/components/EmptyState';
 import ConfirmDialog from '../../src/components/ConfirmDialog';
+import { FontAwesome } from '@expo/vector-icons';
 
 const SEVERITY_COLORS: Record<string, string> = {
   critical: Colors.accentRed,
@@ -15,10 +16,10 @@ const SEVERITY_COLORS: Record<string, string> = {
 };
 
 const SEVERITY_ICONS: Record<string, string> = {
-  critical: '🚨',
-  high: '⚠️',
-  medium: 'ℹ️',
-  low: '💬',
+  critical: 'exclamation-circle',
+  high: 'exclamation-triangle',
+  medium: 'info-circle',
+  low: 'comment',
 };
 
 const FILTERS = ['all', 'active', 'acknowledged', 'resolved'];
@@ -80,18 +81,18 @@ export default function AlertsScreen() {
         {alerts === undefined ? (
           <ActivityIndicator color={Colors.accent} style={{ marginTop: 40 }} />
         ) : filtered.length === 0 ? (
-          <EmptyState icon="✅" title="No alerts" message={filter === 'all' ? 'Everything looks good — no active alerts' : `No ${filter} alerts`} />
+          <EmptyState icon="check-circle" title="No alerts" message={filter === 'all' ? 'Everything looks good — no active alerts' : `No ${filter} alerts`} />
         ) : (
           filtered.map((alert: any) => {
             const severityColor = SEVERITY_COLORS[alert.severity] ?? Colors.textMuted;
+            const iconName = (SEVERITY_ICONS[alert.severity] ?? 'info-circle') as any;
+            const iconColor = alert.severity === 'critical' ? Colors.accentRed : Colors.textPrimary;
             const isActive = alert.status === 'active';
             return (
               <View key={alert._id} style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: isActive ? `${severityColor}40` : Colors.border, borderRadius: 14, padding: 18, marginBottom: 10 }}>
                 {/* Header */}
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10 }}>
-                  <Text style={{ fontSize: 20, marginRight: 10, marginTop: 2 }}>
-                    {SEVERITY_ICONS[alert.severity] ?? 'ℹ️'}
-                  </Text>
+                  <FontAwesome name={iconName} size={20} color={iconColor} style={{ marginRight: 10, marginTop: 2 }} />
                   <View style={{ flex: 1 }}>
                     <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary, marginBottom: 4 }}>
                       {alert.title}

@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { Colors } from '../../src/constants/colors';
+import { FontAwesome } from '@expo/vector-icons';
 
 export default function SignIn() {
   const { signIn, setActive, isLoaded } = useSignIn();
@@ -50,16 +51,22 @@ export default function SignIn() {
   const handleAppleSignIn = async () => {
     setAppleLoading(true);
     try {
+      if (Platform.OS === 'web') {
+        await signIn!.authenticateWithRedirect({
+          strategy: 'oauth_apple',
+          redirectUrl: `${window.location.origin}/sso-callback`,
+          redirectUrlComplete: `${window.location.origin}/(app)`,
+        });
+        return;
+      }
       const { createdSessionId, setActive } = await startAppleOAuthFlow({
         redirectUrl: Linking.createURL('/(app)', { scheme: 'cobrex' }),
       });
       if (createdSessionId && setActive) {
         await setActive({ session: createdSessionId });
-        router.replace('/(app)');
       }
     } catch (e: any) {
       setError(e.message ?? 'Apple sign in failed');
-    } finally {
       setAppleLoading(false);
     }
   };
@@ -97,12 +104,12 @@ export default function SignIn() {
     try {
       // Step 1: create sign in with just the identifier
       const { supportedFirstFactors } = await signIn.create({ identifier: email });
-      
+
       // Step 2: find email_code factor
       const emailFactor = supportedFirstFactors?.find(
         (f: any) => f.strategy === 'email_code'
       ) as any;
-      
+
       if (!emailFactor) {
         setError('Email code sign-in is not enabled for this account.');
         return;
@@ -252,8 +259,9 @@ export default function SignIn() {
           </TouchableOpacity>
 
           {pendingCode && (
-            <TouchableOpacity onPress={() => { setPendingCode(false); setCode(''); setError(''); }} style={{ alignItems: 'center', marginBottom: 8 }}>
-              <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.textMuted }}>← Back</Text>
+            <TouchableOpacity onPress={() => { setPendingCode(false); setCode(''); setError(''); }} style={{ alignItems: 'center', marginBottom: 8, flexDirection: 'row', justifyContent: 'center', gap: 6 }}>
+              <FontAwesome name="chevron-left" size={13} color={Colors.textMuted} />
+              <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.textMuted }}>Back</Text>
             </TouchableOpacity>
           )}
 
@@ -273,7 +281,7 @@ export default function SignIn() {
           {appleLoading
             ? <ActivityIndicator color={Colors.textPrimary} size="small" />
             : <>
-                <Text style={{ fontSize: 18 }}>🍎</Text>
+                <FontAwesome name="apple" size={18} color={Colors.textPrimary} />
                 <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary }}>Continue with Apple</Text>
               </>
           }
@@ -288,7 +296,7 @@ export default function SignIn() {
           {oauthLoading
             ? <ActivityIndicator color={Colors.textPrimary} size="small" />
             : <>
-                <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#4285F4' }}>G</Text>
+                <FontAwesome name="google" size={16} color="#4285F4" />
                 <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary }}>Continue with Google</Text>
               </>
           }

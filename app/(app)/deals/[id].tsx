@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, TextInput, Linking } from 'react-native';
 import { Colors } from '../../../src/constants/colors';
 import { useState } from 'react';
+import { FontAwesome } from '@expo/vector-icons';
 
 const PAYMENT_COLORS: Record<string, string> = {
   paid_in_full: Colors.green,
@@ -14,7 +15,7 @@ const PAYMENT_COLORS: Record<string, string> = {
 };
 
 const DEAL_TYPE_ICONS: Record<string, string> = {
-  live: '🎤', session: '🎙️', sync: '🎬', sponsorship: '🤝', other: '��',
+  live: 'microphone', session: 'microphone', sync: 'film', sponsorship: 'handshake-o', other: 'file-text-o',
 };
 
 function formatMoney(cents: number, currency = 'EUR') {
@@ -46,11 +47,12 @@ export default function DealDetail() {
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bg }}>
       <View style={{ padding: 20, paddingTop: 16, borderBottomWidth: 1, borderBottomColor: Colors.border }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 12 }}>
-          <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 15, color: Colors.accent }}>← Deals</Text>
+        <TouchableOpacity onPress={() => router.back()} style={{ marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <FontAwesome name="chevron-left" size={14} color={Colors.accent} />
+          <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 15, color: Colors.accent }}>Deals</Text>
         </TouchableOpacity>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={{ fontSize: 28, marginRight: 12 }}>{DEAL_TYPE_ICONS[deal.dealType] ?? '📄'}</Text>
+          <FontAwesome name={(DEAL_TYPE_ICONS[deal.dealType] ?? 'file-text-o') as any} size={28} color={Colors.textPrimary} style={{ marginRight: 12 }} />
           <View style={{ flex: 1 }}>
             <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 22, color: Colors.textPrimary, marginBottom: 2, textTransform: 'capitalize' }}>{deal.dealType} Deal</Text>
             <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.textMuted }}>{new Date(deal._creationTime).toLocaleDateString()}</Text>
@@ -65,7 +67,10 @@ export default function DealDetail() {
 
         {/* Financial summary */}
         <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 20, marginBottom: 16 }}>
-          <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 16 }}>�� Financials</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            <FontAwesome name="money" size={14} color={Colors.textPrimary} />
+            <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary }}>Financials</Text>
+          </View>
           <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
             <View style={{ flex: 1, backgroundColor: Colors.surface2, borderRadius: 12, padding: 14 }}>
               <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 11, color: Colors.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>Agreed</Text>
@@ -94,7 +99,7 @@ export default function DealDetail() {
         {/* Mark deposit received */}
         {deal.paymentStatus === 'unpaid' && (
           <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 20, marginBottom: 16 }}>
-            <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 14 }}>💳 Mark Deposit Received</Text>
+            <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 14 }}>Mark Deposit Received</Text>
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <TextInput
                 value={depositInput}
@@ -122,7 +127,10 @@ export default function DealDetail() {
         {/* Mark fully paid */}
         {deal.paymentStatus !== 'paid_in_full' && deal.paymentStatus !== 'refunded' && (
           <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 20, marginBottom: 16 }}>
-            <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 14 }}>✅ Mark Fully Paid</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <FontAwesome name="check-circle" size={14} color={Colors.green} />
+              <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary }}>Mark Fully Paid</Text>
+            </View>
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <TextInput
                 value={fullInput}
@@ -155,7 +163,10 @@ export default function DealDetail() {
         {/* Notes */}
         {deal.notes && (
           <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 20, marginBottom: 16 }}>
-            <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 10 }}>📝 Notes</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <FontAwesome name="pencil-square-o" size={14} color={Colors.textPrimary} />
+              <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary }}>Notes</Text>
+            </View>
             <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 14, color: Colors.textMuted, lineHeight: 22 }}>{deal.notes}</Text>
           </View>
         )}
@@ -166,9 +177,9 @@ export default function DealDetail() {
             onPress={() => Linking.openURL(deal.contractUrl!)}
             style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 20, marginBottom: 16, flexDirection: 'row', alignItems: 'center' }}
           >
-            <Text style={{ fontSize: 20, marginRight: 12 }}>📄</Text>
+            <FontAwesome name="file-text-o" size={20} color={Colors.accentBlue} style={{ marginRight: 12 }} />
             <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 14, color: Colors.accentBlue, flex: 1 }}>View Contract</Text>
-            <Text style={{ color: Colors.textMuted }}>↗</Text>
+            <FontAwesome name="chevron-right" size={14} color={Colors.textMuted} />
           </TouchableOpacity>
         )}
 

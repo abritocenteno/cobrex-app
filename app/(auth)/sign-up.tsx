@@ -7,11 +7,12 @@ import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Colors } from '../../src/constants/colors';
+import { FontAwesome } from '@expo/vector-icons';
 
 const ROLES = [
-  { id: 'artist', label: 'Artist', description: 'Manage your shows, deals, and career', emoji: '🎤' },
-  { id: 'manager', label: 'Manager', description: 'Manage your roster and bookings', emoji: '🎯' },
-  { id: 'venue', label: 'Venue', description: 'Manage your venue and events', emoji: '🏛️' },
+  { id: 'artist', label: 'Artist', description: 'Manage your shows, deals, and career', icon: 'microphone' },
+  { id: 'manager', label: 'Manager', description: 'Manage your roster and bookings', icon: 'bullseye' },
+  { id: 'venue', label: 'Venue', description: 'Manage your venue and events', icon: 'building' },
 ];
 
 const NAME_CONFIG: Record<string, { label: string; placeholder: string }> = {
@@ -118,6 +119,14 @@ export default function SignUp() {
   const handleAppleSignUp = async () => {
     setAppleLoading(true);
     try {
+      if (Platform.OS === 'web') {
+        await signUp!.authenticateWithRedirect({
+          strategy: 'oauth_apple',
+          redirectUrl: `${window.location.origin}/sso-callback`,
+          redirectUrlComplete: `${window.location.origin}/(app)`,
+        });
+        return;
+      }
       const { createdSessionId, setActive: sa } = await startAppleOAuthFlow({
         redirectUrl: Linking.createURL('/(app)', { scheme: 'cobrex' }),
       });
@@ -126,7 +135,6 @@ export default function SignUp() {
       }
     } catch (e: any) {
       setError(e.message ?? 'Apple sign up failed');
-    } finally {
       setAppleLoading(false);
     }
   };
@@ -163,14 +171,14 @@ export default function SignUp() {
                   alignItems: 'center',
                 }}
               >
-                <Text style={{ fontSize: 28, marginRight: 14 }}>{r.emoji}</Text>
+                <FontAwesome name={r.icon as any} size={28} color={Colors.accent} style={{ marginRight: 14 }} />
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 15, color: Colors.textPrimary, marginBottom: 2 }}>{r.label}</Text>
                   <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted }}>{r.description}</Text>
                 </View>
                 {role === r.id && (
                   <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: Colors.accent, justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={{ color: '#000', fontSize: 12 }}>✓</Text>
+                    <FontAwesome name="check" size={11} color="#000" />
                   </View>
                 )}
               </TouchableOpacity>
@@ -182,7 +190,7 @@ export default function SignUp() {
               onPress={() => { if (!role) { setError('Please select a role to continue'); return; } setError(''); setStep(1); }}
               style={{ backgroundColor: role ? Colors.accent : Colors.surface2, borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 8, opacity: role ? 1 : 0.5 }}
             >
-              <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 15, color: role ? '#000' : Colors.textMuted }}>Continue →</Text>
+              <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 15, color: role ? '#000' : Colors.textMuted }}>Continue</Text>
             </TouchableOpacity>
 
             {/* Divider */}
@@ -193,13 +201,24 @@ export default function SignUp() {
             </View>
 
             <TouchableOpacity
+              onPress={handleAppleSignUp}
+              disabled={appleLoading}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, paddingVertical: 14, marginBottom: 12, gap: 10 }}
+            >
+              {appleLoading
+                ? <ActivityIndicator color={Colors.textPrimary} size="small" />
+                : <><FontAwesome name="apple" size={18} color={Colors.textPrimary} /><Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary }}>Continue with Apple</Text></>
+              }
+            </TouchableOpacity>
+
+            <TouchableOpacity
               onPress={handleGoogleSignUp}
               disabled={oauthLoading}
               style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, paddingVertical: 14, marginBottom: 12, gap: 10 }}
             >
               {oauthLoading
                 ? <ActivityIndicator color={Colors.textPrimary} size="small" />
-                : <><Text style={{ fontSize: 16, fontWeight: 'bold', color: '#4285F4' }}>G</Text><Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary }}>Continue with Google</Text></>
+                : <><FontAwesome name="google" size={16} color="#4285F4" /><Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary }}>Continue with Google</Text></>
               }
             </TouchableOpacity>
 
@@ -238,8 +257,9 @@ export default function SignUp() {
               {loading ? <ActivityIndicator color="#000" /> : <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 15, color: '#000' }}>Create Account</Text>}
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => { setError(''); setStep(0); }} style={{ alignItems: 'center', paddingVertical: 10 }}>
-              <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 14, color: Colors.textMuted }}>← Back</Text>
+            <TouchableOpacity onPress={() => { setError(''); setStep(0); }} style={{ alignItems: 'center', paddingVertical: 10, flexDirection: 'row', justifyContent: 'center', gap: 6 }}>
+              <FontAwesome name="chevron-left" size={14} color={Colors.textMuted} />
+              <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 14, color: Colors.textMuted }}>Back</Text>
             </TouchableOpacity>
           </>
         )}

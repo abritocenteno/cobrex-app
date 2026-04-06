@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Modal } from 'react-native';
 import { Colors } from '../../../src/constants/colors';
 import { formatTime, formatDate } from '../../../src/utils/format';
+import { FontAwesome } from '@expo/vector-icons';
 
 const STATUS_COLORS: Record<string, string> = {
   confirmed: Colors.green,
@@ -85,14 +86,16 @@ export default function ShowDetail() {
       {/* Header */}
       <View style={{ padding: 20, paddingTop: 16, borderBottomWidth: 1, borderBottomColor: Colors.border }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
-          <TouchableOpacity onPress={() => router.back()} style={{ flex: 1 }}>
-            <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 15, color: Colors.accent }}>← Shows</Text>
+          <TouchableOpacity onPress={() => router.back()} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <FontAwesome name="chevron-left" size={14} color={Colors.accent} />
+            <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 15, color: Colors.accent }}>Shows</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => router.push(`/(app)/shows/edit/${show._id}` as any)}
-            style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10, borderWidth: 1, borderColor: Colors.border }}
+            style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10, borderWidth: 1, borderColor: Colors.border, flexDirection: 'row', alignItems: 'center', gap: 6 }}
           >
-            <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 13, color: Colors.textMuted }}>✏️ Edit</Text>
+            <FontAwesome name="pencil" size={13} color={Colors.textMuted} />
+            <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 13, color: Colors.textMuted }}>Edit</Text>
           </TouchableOpacity>
         </View>
         <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 24, color: Colors.textPrimary, marginBottom: 6 }}>{show.name}</Text>
@@ -110,7 +113,7 @@ export default function ShowDetail() {
 
         {/* Date & Times */}
         <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 20, marginBottom: 16 }}>
-          <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 16 }}>📅 Schedule</Text>
+          <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 16 }}>Schedule</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 16 }}>
             {[
               { label: 'Date', value: formatDate(show.showDate, { weekday: true }) },
@@ -130,7 +133,7 @@ export default function ShowDetail() {
 
         {/* Change Status */}
         <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 20, marginBottom: 16 }}>
-          <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 14 }}>🔄 Update Status</Text>
+          <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 14 }}>Update Status</Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {STATUS_ACTIONS.map((s) => (
               <TouchableOpacity
@@ -149,15 +152,15 @@ export default function ShowDetail() {
           onPress={() => router.push(`/(app)/shows/checklist/${show._id}` as any)}
           style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 20, marginBottom: 16, flexDirection: 'row', alignItems: 'center' }}
         >
-          <Text style={{ fontSize: 20, marginRight: 12 }}>📋</Text>
+          <FontAwesome name="clipboard" size={20} color={Colors.textPrimary} style={{ marginRight: 12 }} />
           <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary, flex: 1 }}>Show Checklist</Text>
-          <Text style={{ color: Colors.textMuted }}>→</Text>
+          <FontAwesome name="chevron-right" size={14} color={Colors.textMuted} />
         </TouchableOpacity>
 
         {/* Timeline */}
         {timeline !== undefined && timeline.length > 0 && (
           <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 20, marginBottom: 16 }}>
-            <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 16 }}>⏱️ Timeline</Text>
+            <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 16 }}>Timeline</Text>
             {timeline.map((event: any, index: number) => {
               const eventColor = TIMELINE_STATUS_COLORS[event.status] ?? Colors.textMuted;
               return (
@@ -193,7 +196,10 @@ export default function ShowDetail() {
         {/* Notes */}
         {show.notes ? (
           <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 20, marginBottom: 16 }}>
-            <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 10 }}>📝 Notes</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <FontAwesome name="pencil-square-o" size={14} color={Colors.textPrimary} />
+              <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary }}>Notes</Text>
+            </View>
             <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 14, color: Colors.textMuted, lineHeight: 22 }}>{show.notes}</Text>
           </View>
         ) : null}
@@ -201,7 +207,8 @@ export default function ShowDetail() {
         {/* Setlist */}
         <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 20, marginBottom: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
-            <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, flex: 1 }}>🎵 Setlist</Text>
+            <FontAwesome name="music" size={14} color={Colors.textPrimary} style={{ marginRight: 8 }} />
+            <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, flex: 1 }}>Setlist</Text>
             {setlistVersion ? (
               <TouchableOpacity
                 onPress={() => setShowSongPicker(true)}
@@ -219,7 +226,7 @@ export default function ShowDetail() {
               onPress={handleCreateSetlist}
               style={{ borderWidth: 1, borderColor: Colors.border, borderStyle: 'dashed', borderRadius: 12, padding: 20, alignItems: 'center' }}
             >
-              <Text style={{ fontSize: 28, marginBottom: 8 }}>🎶</Text>
+              <FontAwesome name="music" size={28} color={Colors.textMuted} style={{ marginBottom: 8 }} />
               <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, marginBottom: 4 }}>No setlist yet</Text>
               <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.accent }}>Tap to create one</Text>
             </TouchableOpacity>
@@ -251,7 +258,7 @@ export default function ShowDetail() {
                     </Text>
                   ) : null}
                   <TouchableOpacity onPress={() => removeItem({ id: item._id })}>
-                    <Text style={{ fontSize: 14, color: Colors.textMuted }}>✕</Text>
+                    <FontAwesome name="times" size={14} color={Colors.textMuted} />
                   </TouchableOpacity>
                 </View>
               ))}
@@ -273,7 +280,7 @@ export default function ShowDetail() {
             <View style={{ flexDirection: 'row', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: Colors.border }}>
               <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 16, color: Colors.textPrimary, flex: 1 }}>Add Song</Text>
               <TouchableOpacity onPress={() => setShowSongPicker(false)}>
-                <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 22, color: Colors.textMuted }}>✕</Text>
+                <FontAwesome name="times" size={20} color={Colors.textMuted} />
               </TouchableOpacity>
             </View>
             <ScrollView contentContainerStyle={{ padding: 16 }}>

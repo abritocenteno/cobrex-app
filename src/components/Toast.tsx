@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { Animated, Text, View, Platform } from 'react-native';
+import { Animated, View, Platform } from 'react-native';
 import { Colors } from '../constants/colors';
+import { FontAwesome } from '@expo/vector-icons';
 
 export type ToastType = 'success' | 'error' | 'info';
 
@@ -17,11 +18,13 @@ const TOAST_COLORS = {
   info: Colors.accentBlue,
 };
 
-const TOAST_ICONS = {
-  success: '✓',
-  error: '✕',
-  info: 'ℹ',
+const TOAST_ICONS: Record<ToastType, string> = {
+  success: 'check',
+  error: 'times',
+  info: 'info-circle',
 };
+
+import { Text } from 'react-native';
 
 export default function Toast({ message, type = 'success', visible, onHide }: Props) {
   const opacity = useRef(new Animated.Value(0)).current;
@@ -78,7 +81,7 @@ export default function Toast({ message, type = 'success', visible, onHide }: Pr
         elevation: 8,
       }}>
         <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: `${color}20`, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ color, fontSize: 13, fontFamily: 'DMSans_700Bold' }}>{TOAST_ICONS[type]}</Text>
+          <FontAwesome name={TOAST_ICONS[type] as any} size={13} color={color} />
         </View>
         <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 14, color: Colors.textPrimary, flex: 1 }}>{message}</Text>
       </View>

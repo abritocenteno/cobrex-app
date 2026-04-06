@@ -3,6 +3,7 @@ import { api } from '../../../convex/_generated/api';
 import { useRouter } from 'expo-router';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { Colors } from '../../../src/constants/colors';
+import { FontAwesome } from '@expo/vector-icons';
 
 export default function OnboardingWelcome() {
   const router = useRouter();
@@ -27,15 +28,15 @@ export default function OnboardingWelcome() {
         {/* Steps preview */}
         <View style={{ marginBottom: 40 }}>
           {[
-            { icon: '👤', label: 'Artist Profile', desc: 'Name, bio & location' },
-            { icon: '🎵', label: 'Genre & Style', desc: 'Help people find you' },
-            { icon: '🔗', label: 'Social Links', desc: 'Spotify, Instagram & more' },
-            { icon: '🎤', label: 'First Show', desc: 'Add an upcoming show' },
-            { icon: '📁', label: 'First Asset', desc: 'Upload a tech rider' },
+            { icon: 'user' as const, label: 'Artist Profile', desc: 'Name, bio & location' },
+            { icon: 'music' as const, label: 'Genre & Style', desc: 'Help people find you' },
+            { icon: 'link' as const, label: 'Social Links', desc: 'Spotify, Instagram & more' },
+            { icon: 'microphone' as const, label: 'First Show', desc: 'Add an upcoming show' },
+            { icon: 'folder' as const, label: 'First Asset', desc: 'Upload a tech rider' },
           ].map((step, i) => (
             <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16, backgroundColor: Colors.surface, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: Colors.border }}>
               <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: `${Colors.accent}18`, justifyContent: 'center', alignItems: 'center', marginRight: 14 }}>
-                <Text style={{ fontSize: 20 }}>{step.icon}</Text>
+                <FontAwesome name={step.icon} size={20} color={Colors.accent} />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary }}>{step.label}</Text>
@@ -50,7 +51,7 @@ export default function OnboardingWelcome() {
           onPress={() => router.push('/(app)/onboarding/profile')}
           style={{ backgroundColor: Colors.accent, borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginBottom: 14 }}
         >
-          <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 16, color: '#000' }}>Let's get started →</Text>
+          <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 16, color: '#000' }}>Let's get started</Text>
         </TouchableOpacity>
 
         <TouchableOpacity

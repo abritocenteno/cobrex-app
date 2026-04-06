@@ -6,6 +6,7 @@ import { Colors } from '../../../src/constants/colors';
 import EmptyState from '../../../src/components/EmptyState';
 import { SkeletonList } from '../../../src/components/Skeleton';
 import { useState } from 'react';
+import { FontAwesome } from '@expo/vector-icons';
 
 const TYPE_LABELS: Record<string, string> = {
   foh_engineer: 'FOH Engineer',
@@ -19,14 +20,14 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const TYPE_ICONS: Record<string, string> = {
-  foh_engineer: '🎚️',
-  monitor_engineer: '🎛️',
-  tour_manager: '🗺️',
-  promoter: '📣',
-  booking_agent: '🤝',
-  lighting_designer: '💡',
-  photographer: '📷',
-  other: '👤',
+  foh_engineer: 'sliders',
+  monitor_engineer: 'sliders',
+  tour_manager: 'map',
+  promoter: 'bullhorn',
+  booking_agent: 'handshake-o',
+  lighting_designer: 'lightbulb-o',
+  photographer: 'camera',
+  other: 'user',
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -110,13 +111,13 @@ export default function ContactsScreen() {
         {contacts === undefined ? (
           <SkeletonList count={4} />
         ) : filtered.length === 0 ? (
-          <EmptyState icon="👥" title="No contacts found" message={search ? 'Try a different search term' : 'Add your first contact to get started'} actionLabel={!search ? '+ Add Contact' : undefined} onAction={!search ? () => router.push('/(app)/contacts/add') : undefined} />
+          <EmptyState icon="users" title="No contacts found" message={search ? 'Try a different search term' : 'Add your first contact to get started'} actionLabel={!search ? '+ Add Contact' : undefined} onAction={!search ? () => router.push('/(app)/contacts/add') : undefined} />
         ) : (
           filtered.map((contact: any) => (
             <TouchableOpacity key={contact._id} onPress={() => router.push(`/(app)/contacts/${contact._id}` as any)} style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 14, padding: 16, marginBottom: 10, flexDirection: 'row', alignItems: 'center' }}>
               {/* Avatar */}
               <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: `${Colors.accent}18`, justifyContent: 'center', alignItems: 'center', marginRight: 14 }}>
-                <Text style={{ fontSize: 22 }}>{TYPE_ICONS[contact.contactType] ?? '👤'}</Text>
+                <FontAwesome name={(TYPE_ICONS[contact.contactType] ?? 'user') as any} size={22} color={Colors.accent} />
               </View>
 
               {/* Info */}
