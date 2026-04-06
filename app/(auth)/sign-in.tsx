@@ -1,16 +1,23 @@
-import { useSignIn, useOAuth } from '@clerk/clerk-expo';
+import { useSignIn, useOAuth, useAuth } from '@clerk/clerk-expo';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 
 WebBrowser.maybeCompleteAuthSession();
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { Colors } from '../../src/constants/colors';
 
 export default function SignIn() {
   const { signIn, setActive, isLoaded } = useSignIn();
+  const { isSignedIn } = useAuth();
   const router = useRouter();
+
+  // Handles OAuth timing: navigate once Clerk confirms the session is active
+  useEffect(() => {
+    if (isSignedIn) router.replace('/(app)');
+  }, [isSignedIn]);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
@@ -60,15 +67,24 @@ export default function SignIn() {
   const handleGoogleSignIn = async () => {
     setOauthLoading(true);
     try {
+      if (Platform.OS === 'web') {
+        await signIn!.authenticateWithRedirect({
+          strategy: 'oauth_google',
+          redirectUrl: `${window.location.origin}/sso-callback`,
+          redirectUrlComplete: `${window.location.origin}/(app)`,
+        });
+        return;
+      }
       const { createdSessionId, setActive } = await startOAuthFlow({
         redirectUrl: Linking.createURL('/(app)', { scheme: 'cobrex' }),
       });
       if (createdSessionId && setActive) {
         await setActive({ session: createdSessionId });
-        router.replace('/(app)');
       }
     } catch (e: any) {
       setError(e.message ?? 'Google sign in failed');
+      setOauthLoading(false);
+      return;
     } finally {
       setOauthLoading(false);
     }

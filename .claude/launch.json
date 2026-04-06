@@ -3,19 +3,19 @@
   "configurations": [
     {
       "name": "Expo Dev Server",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "/opt/homebrew/bin/npm",
       "runtimeArgs": ["run", "start"],
       "port": 8081
     },
     {
       "name": "Expo Web",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "web"],
+      "runtimeExecutable": "/opt/homebrew/bin/node",
+      "runtimeArgs": ["node_modules/.bin/expo", "start", "--web"],
       "port": 8081
     },
     {
       "name": "Convex Dev",
-      "runtimeExecutable": "npx",
+      "runtimeExecutable": "/opt/homebrew/bin/npx",
       "runtimeArgs": ["convex", "dev"],
       "port": 3210
     }

@@ -1,10 +1,10 @@
-import { useSignUp, useOAuth } from '@clerk/clerk-expo';
+import { useSignUp, useOAuth, useAuth } from '@clerk/clerk-expo';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 
 WebBrowser.maybeCompleteAuthSession();
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Colors } from '../../src/constants/colors';
 
@@ -22,7 +22,13 @@ const NAME_CONFIG: Record<string, { label: string; placeholder: string }> = {
 
 export default function SignUp() {
   const { signUp, setActive, isLoaded } = useSignUp();
+  const { isSignedIn } = useAuth();
   const router = useRouter();
+
+  // Handles OAuth timing: navigate once Clerk confirms the session is active
+  useEffect(() => {
+    if (isSignedIn) router.replace('/(app)');
+  }, [isSignedIn]);
 
   const [step, setStep] = useState<0 | 1 | 2>(0);
   const [role, setRole] = useState('');
@@ -88,16 +94,23 @@ export default function SignUp() {
   const handleGoogleSignUp = async () => {
     setOauthLoading(true);
     try {
+      if (Platform.OS === 'web') {
+        // Full-page redirect avoids COOP popup issues on web
+        await signUp!.authenticateWithRedirect({
+          strategy: 'oauth_google',
+          redirectUrl: `${window.location.origin}/sso-callback`,
+          redirectUrlComplete: `${window.location.origin}/(app)`,
+        });
+        return;
+      }
       const { createdSessionId, setActive: sa } = await startOAuthFlow({
         redirectUrl: Linking.createURL('/(app)', { scheme: 'cobrex' }),
       });
       if (createdSessionId && sa) {
         await sa({ session: createdSessionId });
-        router.replace('/(app)');
       }
     } catch (e: any) {
       setError(e.message ?? 'Google sign up failed');
-    } finally {
       setOauthLoading(false);
     }
   };
@@ -110,7 +123,6 @@ export default function SignUp() {
       });
       if (createdSessionId && sa) {
         await sa({ session: createdSessionId });
-        router.replace('/(app)');
       }
     } catch (e: any) {
       setError(e.message ?? 'Apple sign up failed');
