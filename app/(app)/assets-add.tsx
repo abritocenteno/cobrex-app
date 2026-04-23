@@ -8,18 +8,28 @@ import { Colors } from '../../src/constants/colors';
 import ScreenContainer from '../../src/components/ScreenContainer';
 import Toast from '../../src/components/Toast';
 import { useToast } from '../../src/hooks/useToast';
+import DropdownSelect from '../../src/components/DropdownSelect';
 
 const ASSET_TYPES = [
-  { value: 'tech_rider', label: '🎚️ Tech Rider' },
-  { value: 'stage_plot', label: '🗺️ Stage Plot' },
-  { value: 'input_list', label: '🎛️ Input List' },
-  { value: 'hospitality_rider', label: '🍽️ Hospitality Rider' },
-  { value: 'press_kit', label: '📰 Press Kit' },
-  { value: 'press_photo', label: '📷 Press Photo' },
-  { value: 'contract', label: '📄 Contract' },
-  { value: 'invoice', label: '🧾 Invoice' },
-  { value: 'setlist', label: '🎵 Setlist' },
-  { value: 'other', label: '📁 Other' },
+  { value: 'tech_rider', label: 'Tech Rider' },
+  { value: 'stage_plot', label: 'Stage Plot' },
+  { value: 'input_list', label: 'Input List' },
+  { value: 'hospitality_rider', label: 'Hospitality Rider' },
+  { value: 'press_kit', label: 'Press Kit' },
+  { value: 'press_photo', label: 'Press Photo' },
+  { value: 'contract', label: 'Contract' },
+  { value: 'invoice', label: 'Invoice' },
+  { value: 'setlist', label: 'Setlist' },
+  { value: 'other', label: 'Other' },
+];
+
+const ALLOWED_MIME_TYPES = [
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword',
+  'image/png',
+  'image/jpeg',
+  'image/svg+xml',
 ];
 
 export default function AddAsset() {
@@ -41,7 +51,7 @@ export default function AddAsset() {
   const handlePickFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'image/*', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        type: ALLOWED_MIME_TYPES,
         copyToCacheDirectory: true,
       });
       if (!result.canceled && result.assets[0]) {
@@ -72,22 +82,18 @@ export default function AddAsset() {
         router.back();
       } catch (e: any) {
         setError(e.message ?? 'Failed to save');
-      showToast(e.message ?? 'Something went wrong', 'error');
+        showToast(e.message ?? 'Something went wrong', 'error');
       } finally {
         setLoading(false);
       }
       return;
     }
 
-    // Upload mode
     if (!selectedFile) { setError('Please select a file'); return; }
     setLoading(true);
     setError('');
     try {
-      // Get upload URL from Convex
       const uploadUrl = await generateUploadUrl();
-
-      // Upload file to Convex storage
       const response = await fetch(selectedFile.uri);
       const blob = await response.blob();
       const uploadResponse = await fetch(uploadUrl, {
@@ -140,30 +146,23 @@ export default function AddAsset() {
             onPress={() => setMode('upload')}
             style={{ flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: mode === 'upload' ? Colors.accent : 'transparent', alignItems: 'center' }}
           >
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: mode === 'upload' ? '#000' : Colors.textMuted }}>📤 Upload File</Text>
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: mode === 'upload' ? '#000' : Colors.textMuted }}>Upload File</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setMode('link')}
             style={{ flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: mode === 'link' ? Colors.accent : 'transparent', alignItems: 'center' }}
           >
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: mode === 'link' ? '#000' : Colors.textMuted }}>🔗 Link URL</Text>
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: mode === 'link' ? '#000' : Colors.textMuted }}>Link URL</Text>
           </TouchableOpacity>
         </View>
 
         <Text style={labelStyle}>Asset Type</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            {ASSET_TYPES.map((t) => (
-              <TouchableOpacity
-                key={t.value}
-                onPress={() => setAssetType(t.value)}
-                style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: assetType === t.value ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: assetType === t.value ? Colors.accent : Colors.border }}
-              >
-                <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: assetType === t.value ? '#000' : Colors.textMuted }}>{t.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
+        <DropdownSelect
+          options={ASSET_TYPES}
+          value={assetType}
+          onChange={(v) => setAssetType(v)}
+          placeholder="Select type..."
+        />
 
         <Text style={labelStyle}>Name *</Text>
         <TextInput value={name} onChangeText={setName} placeholder="e.g. Tech Rider 2025" placeholderTextColor={Colors.textMuted} style={inputStyle} />
@@ -177,7 +176,6 @@ export default function AddAsset() {
             >
               {selectedFile ? (
                 <>
-                  <Text style={{ fontSize: 32, marginBottom: 8 }}>📄</Text>
                   <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, marginBottom: 4 }}>{selectedFile.name}</Text>
                   <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted }}>
                     {selectedFile.size ? `${(selectedFile.size / 1024).toFixed(1)} KB` : 'Size unknown'}
@@ -185,9 +183,8 @@ export default function AddAsset() {
                 </>
               ) : (
                 <>
-                  <Text style={{ fontSize: 32, marginBottom: 8 }}>📤</Text>
                   <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, marginBottom: 4 }}>Choose a file</Text>
-                  <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted }}>PDF, images, Word documents</Text>
+                  <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted }}>PDF, DOCX, PNG, JPG, SVG</Text>
                 </>
               )}
             </TouchableOpacity>

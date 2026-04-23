@@ -9,8 +9,30 @@ import { Colors } from '../../src/constants/colors';
 import Toast from '../../src/components/Toast';
 import { useToast } from '../../src/hooks/useToast';
 import ScreenContainer from '../../src/components/ScreenContainer';
+import DropdownSelect from '../../src/components/DropdownSelect';
 
-const GENRES = ['Electronic', 'Hip-Hop', 'Pop', 'Rock', 'Jazz', 'Classical', 'R&B', 'Folk', 'Metal', 'Reggae', 'Country', 'Latin', 'Afrobeat', 'Punk', 'Soul', 'Indie', 'Dance', 'Ambient', 'World', 'Other'];
+const GENRE_OPTIONS = [
+  { value: 'Electronic', label: 'Electronic' },
+  { value: 'Hip-Hop', label: 'Hip-Hop' },
+  { value: 'Pop', label: 'Pop' },
+  { value: 'Rock', label: 'Rock' },
+  { value: 'Jazz', label: 'Jazz' },
+  { value: 'Classical', label: 'Classical' },
+  { value: 'R&B', label: 'R&B' },
+  { value: 'Folk', label: 'Folk' },
+  { value: 'Metal', label: 'Metal' },
+  { value: 'Reggae', label: 'Reggae' },
+  { value: 'Country', label: 'Country' },
+  { value: 'Latin', label: 'Latin' },
+  { value: 'Afrobeat', label: 'Afrobeat' },
+  { value: 'Punk', label: 'Punk' },
+  { value: 'Soul', label: 'Soul' },
+  { value: 'Indie', label: 'Indie' },
+  { value: 'Dance', label: 'Dance' },
+  { value: 'Ambient', label: 'Ambient' },
+  { value: 'World', label: 'World' },
+  { value: 'Other', label: 'Other' },
+];
 
 export default function ProfileScreen() {
   const { signOut } = useAuth();
@@ -38,7 +60,7 @@ export default function ProfileScreen() {
   const [bio, setBio] = useState('');
   const [location, setLocation] = useState('');
   const [country, setCountry] = useState('');
-  const [genre, setGenre] = useState('');
+  const [genres, setGenres] = useState<string[]>([]);
   const [subGenre, setSubGenre] = useState('');
   const [instagram, setInstagram] = useState('');
   const [spotify, setSpotify] = useState('');
@@ -63,7 +85,7 @@ export default function ProfileScreen() {
       setBio(artistData.bio ?? '');
       setLocation(artistData.location ?? '');
       setCountry(artistData.country ?? '');
-      setGenre(artistData.genre ?? '');
+      setGenres(artistData.genre ? artistData.genre.split(',').filter(Boolean) : []);
       setSubGenre(artistData.subGenre ?? '');
       setInstagram(artistData.instagramHandle ?? '');
       setSpotify(artistData.spotifyArtistId ?? '');
@@ -128,7 +150,7 @@ export default function ProfileScreen() {
           bio: bio || undefined,
           location: location || undefined,
           country: country || undefined,
-          genre: genre || undefined,
+          genre: genres.join(',') || undefined,
           subGenre: subGenre || undefined,
           instagramHandle: instagram || undefined,
           spotifyArtistId: spotify || undefined,
@@ -241,21 +263,17 @@ export default function ProfileScreen() {
 
             {/* Genre */}
             <View style={sectionStyle}>
-              <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 12 }}>🎵 Genre</Text>
-              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                {GENRES.map((g) => (
-                  <TouchableOpacity
-                    key={g}
-                    onPress={() => setGenre(g === genre ? '' : g)}
-                    style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: genre === g ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: genre === g ? Colors.accent : Colors.border }}
-                  >
-                    <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: genre === g ? '#000' : Colors.textMuted }}>{g}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              {genre ? (
+              <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 12 }}>Genre</Text>
+              <DropdownSelect
+                options={GENRE_OPTIONS}
+                value={genres}
+                onChange={setGenres}
+                placeholder="Select genres..."
+                multi
+              />
+              {genres.length > 0 ? (
                 <>
-                  <Text style={{ ...labelStyle, marginTop: 16 }}>Subgenre</Text>
+                  <Text style={{ ...labelStyle, marginTop: 8 }}>Subgenre / Style</Text>
                   <TextInput value={subGenre} onChangeText={setSubGenre} placeholder="e.g. House, Trap, Indie..." placeholderTextColor={Colors.textMuted} style={inputStyle} />
                 </>
               ) : null}

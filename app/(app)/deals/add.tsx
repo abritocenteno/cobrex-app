@@ -7,16 +7,22 @@ import { Colors } from '../../../src/constants/colors';
 import ScreenContainer from '../../../src/components/ScreenContainer';
 import Toast from '../../../src/components/Toast';
 import { useToast } from '../../../src/hooks/useToast';
+import DropdownSelect from '../../../src/components/DropdownSelect';
 
 const DEAL_TYPES = [
-  { value: 'live', label: '🎤 Live' },
-  { value: 'session', label: '🎙️ Session' },
-  { value: 'sync', label: '🎬 Sync' },
-  { value: 'sponsorship', label: '🤝 Sponsorship' },
-  { value: 'other', label: '📄 Other' },
+  { value: 'live', label: 'Live' },
+  { value: 'session', label: 'Session' },
+  { value: 'sync', label: 'Sync' },
+  { value: 'sponsorship', label: 'Sponsorship' },
+  { value: 'other', label: 'Other' },
 ];
 
-const CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF'];
+const CURRENCIES = [
+  { value: 'EUR', label: 'EUR — Euro' },
+  { value: 'USD', label: 'USD — US Dollar' },
+  { value: 'GBP', label: 'GBP — British Pound' },
+  { value: 'CHF', label: 'CHF — Swiss Franc' },
+];
 
 export default function AddDeal() {
   const router = useRouter();
@@ -85,32 +91,20 @@ export default function AddDeal() {
         {error ? <Text style={{ color: Colors.accentRed, fontSize: 13, marginBottom: 16, textAlign: 'center' }}>{error}</Text> : null}
 
         <Text style={labelStyle}>Deal Type *</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            {DEAL_TYPES.map((t) => (
-              <TouchableOpacity
-                key={t.value}
-                onPress={() => setDealType(t.value)}
-                style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: dealType === t.value ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: dealType === t.value ? Colors.accent : Colors.border }}
-              >
-                <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: dealType === t.value ? '#000' : Colors.textMuted }}>{t.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
+        <DropdownSelect
+          options={DEAL_TYPES}
+          value={dealType}
+          onChange={(v) => setDealType(v)}
+          placeholder="Select type..."
+        />
 
         <Text style={labelStyle}>Currency</Text>
-        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
-          {CURRENCIES.map((c) => (
-            <TouchableOpacity
-              key={c}
-              onPress={() => setCurrency(c)}
-              style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: currency === c ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: currency === c ? Colors.accent : Colors.border }}
-            >
-              <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: currency === c ? '#000' : Colors.textMuted }}>{c}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <DropdownSelect
+          options={CURRENCIES}
+          value={currency}
+          onChange={(v) => setCurrency(v)}
+          placeholder="Select currency..."
+        />
 
         <View style={{ flexDirection: 'row', gap: 12 }}>
           <View style={{ flex: 1 }}>
@@ -127,25 +121,15 @@ export default function AddDeal() {
         {(shows ?? []).length > 0 && (
           <>
             <Text style={labelStyle}>Link to Show</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <TouchableOpacity
-                  onPress={() => setSelectedShowId(null)}
-                  style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: selectedShowId === null ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: selectedShowId === null ? Colors.accent : Colors.border }}
-                >
-                  <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: selectedShowId === null ? '#000' : Colors.textMuted }}>None</Text>
-                </TouchableOpacity>
-                {(shows ?? []).slice(0, 10).map((s: any) => (
-                  <TouchableOpacity
-                    key={s._id}
-                    onPress={() => setSelectedShowId(s._id)}
-                    style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: selectedShowId === s._id ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: selectedShowId === s._id ? Colors.accent : Colors.border }}
-                  >
-                    <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: selectedShowId === s._id ? '#000' : Colors.textMuted }}>{s.name}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
+            <DropdownSelect
+              options={[
+                { value: '', label: 'None' },
+                ...(shows ?? []).slice(0, 20).map((s: any) => ({ value: s._id, label: s.name })),
+              ]}
+              value={selectedShowId ?? ''}
+              onChange={(v) => setSelectedShowId(v || null)}
+              placeholder="Select show..."
+            />
           </>
         )}
 
@@ -153,25 +137,15 @@ export default function AddDeal() {
         {promoters.length > 0 && (
           <>
             <Text style={labelStyle}>Promoter</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                <TouchableOpacity
-                  onPress={() => setSelectedPromoterId(null)}
-                  style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: selectedPromoterId === null ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: selectedPromoterId === null ? Colors.accent : Colors.border }}
-                >
-                  <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: selectedPromoterId === null ? '#000' : Colors.textMuted }}>None</Text>
-                </TouchableOpacity>
-                {promoters.map((p: any) => (
-                  <TouchableOpacity
-                    key={p._id}
-                    onPress={() => setSelectedPromoterId(p._id)}
-                    style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: selectedPromoterId === p._id ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: selectedPromoterId === p._id ? Colors.accent : Colors.border }}
-                  >
-                    <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: selectedPromoterId === p._id ? '#000' : Colors.textMuted }}>{p.displayName}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
+            <DropdownSelect
+              options={[
+                { value: '', label: 'None' },
+                ...promoters.map((p: any) => ({ value: p._id, label: p.displayName })),
+              ]}
+              value={selectedPromoterId ?? ''}
+              onChange={(v) => setSelectedPromoterId(v || null)}
+              placeholder="Select promoter..."
+            />
           </>
         )}
 

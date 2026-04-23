@@ -7,6 +7,7 @@ import { Colors } from '../../../src/constants/colors';
 import ScreenContainer from '../../../src/components/ScreenContainer';
 import Toast from '../../../src/components/Toast';
 import { useToast } from '../../../src/hooks/useToast';
+import DropdownSelect from '../../../src/components/DropdownSelect';
 
 const CONTACT_TYPES = [
   { value: 'promoter', label: 'Promoter' },
@@ -87,19 +88,12 @@ export default function AddContact() {
         <TextInput value={displayName} onChangeText={setDisplayName} placeholder="Full name" placeholderTextColor={Colors.textMuted} style={inputStyle} />
 
         <Text style={labelStyle}>Type *</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            {CONTACT_TYPES.map((t) => (
-              <TouchableOpacity
-                key={t.value}
-                onPress={() => setContactType(t.value)}
-                style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: contactType === t.value ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: contactType === t.value ? Colors.accent : Colors.border }}
-              >
-                <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: contactType === t.value ? '#000' : Colors.textMuted }}>{t.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
+        <DropdownSelect
+          options={CONTACT_TYPES}
+          value={contactType}
+          onChange={(v) => setContactType(v)}
+          placeholder="Select type..."
+        />
 
         <Text style={labelStyle}>Email</Text>
         <TextInput value={email} onChangeText={setEmail} placeholder="email@example.com" placeholderTextColor={Colors.textMuted} keyboardType="email-address" autoCapitalize="none" style={inputStyle} />
