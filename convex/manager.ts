@@ -1,6 +1,13 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
+export const list = query({
+  args: {},
+  handler: async (ctx) => {
+    return ctx.db.query("managerProfiles").take(100);
+  },
+});
+
 export const myProfile = query({
   args: {},
   handler: async (ctx) => {
@@ -45,6 +52,65 @@ export const roster = query({
     );
 
     return artists.filter(Boolean);
+  },
+});
+
+export const financialSummary = query({
+  args: { managerId: v.id("managerProfiles") },
+  handler: async (ctx, args) => {
+    const users = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("managerProfileId"), args.managerId))
+      .take(50);
+
+    const artistIds = users.filter((u) => u.artistId).map((u) => u.artistId!);
+
+    let ytd = 0;
+    let outstanding = 0;
+
+    for (const artistId of artistIds) {
+      const deals = await ctx.db
+        .query("deals")
+        .withIndex("by_artist", (q) => q.eq("artistId", artistId))
+        .collect();
+
+      for (const deal of deals) {
+        if (deal.paymentStatus === "paid_in_full") {
+          ytd += deal.actualReceived ?? deal.agreedTotal;
+        } else if (deal.paymentStatus !== "refunded") {
+          outstanding += deal.agreedTotal - (deal.actualReceived ?? 0);
+        }
+      }
+    }
+
+    return { ytd, outstanding };
+  },
+});
+
+export const allShows = query({
+  args: { managerId: v.id("managerProfiles") },
+  handler: async (ctx, args) => {
+    const users = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("managerProfileId"), args.managerId))
+      .take(50);
+
+    const artistIds = users.filter((u) => u.artistId).map((u) => u.artistId!);
+
+    const showGroups = await Promise.all(
+      artistIds.map((artistId) => {
+        const today = new Date().toISOString().split("T")[0];
+        return ctx.db
+          .query("shows")
+          .withIndex("by_artist_and_date", (q) =>
+            q.eq("artistId", artistId).gte("showDate", today)
+          )
+          .filter((q) => q.neq(q.field("status"), "cancelled"))
+          .take(20);
+      })
+    );
+
+    return showGroups.flat().sort((a, b) => a.showDate.localeCompare(b.showDate));
   },
 });
 

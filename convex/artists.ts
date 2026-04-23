@@ -76,6 +76,18 @@ export const update = mutation({
   },
 });
 
+export const search = query({
+  args: { name: v.string() },
+  handler: async (ctx, args) => {
+    if (!args.name.trim()) return [];
+    const lower = args.name.toLowerCase();
+    const artists = await ctx.db.query("artists").take(200);
+    return artists
+      .filter((a) => a.name.toLowerCase().includes(lower))
+      .slice(0, 15);
+  },
+});
+
 export const getStorageUrl = query({
   args: { storageId: v.optional(v.id("_storage")) },
   handler: async (ctx, args) => {

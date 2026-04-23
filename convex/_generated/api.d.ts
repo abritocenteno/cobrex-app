@@ -18,6 +18,7 @@ import type * as manager from "../manager.js";
 import type * as metrics from "../metrics.js";
 import type * as notifications from "../notifications.js";
 import type * as pushTokens from "../pushTokens.js";
+import type * as rosterInvites from "../rosterInvites.js";
 import type * as setlist from "../setlist.js";
 import type * as shows from "../shows.js";
 import type * as timeline from "../timeline.js";
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   metrics: typeof metrics;
   notifications: typeof notifications;
   pushTokens: typeof pushTokens;
+  rosterInvites: typeof rosterInvites;
   setlist: typeof setlist;
   shows: typeof shows;
   timeline: typeof timeline;

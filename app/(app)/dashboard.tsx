@@ -397,7 +397,7 @@ export default function Dashboard() {
       {/* Header */}
       <View style={{ marginBottom: 28 }}>
         <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 13, color: Colors.textMuted, marginBottom: 4 }}>{greeting}</Text>
-        <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 28, color: Colors.textPrimary, marginBottom: 8 }}>{profile?.displayName ?? 'User'}</Text>
+        <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 28, color: Colors.textPrimary, marginBottom: 8 }}>{profile?.name ?? 'User'}</Text>
         <View style={{ paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20, backgroundColor: `${Colors.accent}18`, alignSelf: 'flex-start' }}>
           <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 11, color: Colors.accent, textTransform: 'uppercase', letterSpacing: 1 }}>
             {role} portal

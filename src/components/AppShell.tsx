@@ -17,6 +17,7 @@ const NAV_ITEMS_ARTIST = [
   { label: 'Deals', icon: 'handshake-o', route: '/(app)/deals' },
   { label: 'Assets', icon: 'folder', route: '/(app)/assets' },
   { label: 'Setlist', icon: 'music', route: '/(app)/setlist' },
+  { label: 'My Manager', icon: 'bullseye', route: '/(app)/my-manager' },
   { label: 'Metrics', icon: 'bar-chart', route: '/(app)/metrics' },
   { label: 'Alerts', icon: 'bell', route: '/(app)/alerts' },
   { label: 'Notifications', icon: 'envelope', route: '/(app)/notifications' },
@@ -84,7 +85,7 @@ function NavContent({ onNavigate }: { onNavigate?: () => void }) {
 
       {/* User info + sign out */}
       <View style={{ padding: 16, borderTopWidth: 1, borderTopColor: Colors.border }}>
-        <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 13, color: Colors.textPrimary, marginBottom: 2 }} numberOfLines={1}>{profile?.displayName ?? ''}</Text>
+        <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 13, color: Colors.textPrimary, marginBottom: 2 }} numberOfLines={1}>{profile?.name ?? ''}</Text>
         <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 11, color: Colors.textMuted, marginBottom: 12 }} numberOfLines={1}>{profile?.email ?? ''}</Text>
         <TouchableOpacity
           onPress={() => signOut()}

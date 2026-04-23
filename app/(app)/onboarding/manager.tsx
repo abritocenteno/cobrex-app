@@ -16,21 +16,26 @@ export default function OnboardingManager() {
   const [territory, setTerritory] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const [error, setError] = useState('');
+
   useEffect(() => {
     if (managerProfile) {
-      setAgencyName(managerProfile.agencyName ?? '');
+      setAgencyName(managerProfile.companyName ?? '');
       setTerritory(managerProfile.territory ?? '');
     }
   }, [managerProfile]);
 
   const handleSave = async () => {
     setLoading(true);
+    setError('');
     try {
       if (managerProfile?._id) {
         await updateManager({ id: managerProfile._id, agencyName: agencyName.trim() || undefined, territory: territory.trim() || undefined });
       }
       await completeOnboarding();
       router.replace('/(app)/dashboard');
+    } catch (e: any) {
+      setError(e.message ?? 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -92,6 +97,8 @@ export default function OnboardingManager() {
           placeholderTextColor={Colors.textMuted}
           style={inputStyle}
         />
+
+        {error ? <Text style={{ color: '#ef4444', fontSize: 13, marginBottom: 12, textAlign: 'center' }}>{error}</Text> : null}
 
         <TouchableOpacity
           onPress={handleSave}

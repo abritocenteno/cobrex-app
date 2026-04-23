@@ -12,7 +12,10 @@ export default defineSchema({
     venueProfileId: v.optional(v.id("venueProfiles")),
     onboardingDone: v.optional(v.boolean()),
     onboardingDismissed: v.optional(v.boolean()),
-  }).index("by_token", ["tokenIdentifier"]),
+  })
+    .index("by_token", ["tokenIdentifier"])
+    .index("by_artist", ["artistId"])
+    .index("by_manager_profile", ["managerProfileId"]),
 
   artists: defineTable({
     name: v.string(),
@@ -231,4 +234,15 @@ export default defineSchema({
     token: v.string(),
     platform: v.optional(v.string()),
   }).index("by_user", ["userId"]),
+
+  rosterInvites: defineTable({
+    managerId: v.id("managerProfiles"),
+    artistId: v.id("artists"),
+    direction: v.union(v.literal("manager_to_artist"), v.literal("artist_to_manager")),
+    status: v.union(v.literal("pending"), v.literal("accepted"), v.literal("declined")),
+    message: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_manager", ["managerId"])
+    .index("by_artist", ["artistId"]),
 });

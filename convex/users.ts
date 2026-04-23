@@ -155,6 +155,22 @@ export const completeOnboarding = mutation({
   },
 });
 
+export const update = mutation({
+  args: {
+    displayName: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+      .unique();
+    if (!user) throw new Error("User not found");
+    if (args.displayName !== undefined) await ctx.db.patch(user._id, { name: args.displayName });
+  },
+});
+
 export const dismissOnboarding = mutation({
   args: {},
   handler: async (ctx) => {

@@ -76,7 +76,7 @@ export default function ProfileScreen() {
   const isArtist = profile?.role === 'artist';
 
   useEffect(() => {
-    if (profile) setDisplayName(profile.displayName ?? '');
+    if (profile) setDisplayName(profile.name ?? '');
   }, [profile]);
 
   useEffect(() => {
@@ -162,7 +162,7 @@ export default function ProfileScreen() {
       }
 
       imagePickedRef.current = false;
-      if (isArtist && artistName.trim() && !profile?.profileComplete) {
+      if (isArtist && artistName.trim() && !profile?.onboardingDone) {
         await completeOnboarding();
       }
       showToast('Profile saved!');
@@ -305,8 +305,8 @@ export default function ProfileScreen() {
           <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 12 }}>⚙️ Account Info</Text>
           {[
             { label: 'Role', value: profile?.role?.toUpperCase() ?? '—' },
-            { label: 'Profile complete', value: profile?.profileComplete ? '✓ Yes' : '✗ No', color: profile?.profileComplete ? Colors.green : Colors.orange },
-            { label: 'Member since', value: profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : '—' },
+            { label: 'Profile complete', value: profile?.onboardingDone ? '✓ Yes' : '✗ No', color: profile?.onboardingDone ? Colors.green : Colors.orange },
+            { label: 'Member since', value: profile?._creationTime ? new Date(profile._creationTime).toLocaleDateString() : '—' },
           ].map((item) => (
             <View key={item.label} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
               <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 14, color: Colors.textMuted }}>{item.label}</Text>
