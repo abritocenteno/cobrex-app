@@ -1,9 +1,11 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireArtist, requireAuth, requireNonEmpty, sanitizeStr } from "./helpers";
 
 export const items = query({
   args: { showId: v.id("shows") },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     const rows = await ctx.db
       .query("checklistItems")
       .withIndex("by_show", (q) => q.eq("showId", args.showId))
@@ -16,8 +18,10 @@ export const items = query({
 export const toggle = mutation({
   args: { id: v.id("checklistItems") },
   handler: async (ctx, args) => {
+    const myArtistId = await requireArtist(ctx);
     const item = await ctx.db.get(args.id);
     if (!item) throw new Error("Item not found");
+    if (item.artistId !== myArtistId) throw new Error("Unauthorized");
     await ctx.db.patch(args.id, { isDone: !item.isDone });
   },
 });
@@ -32,8 +36,16 @@ export const add = mutation({
     sortOrder: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    const myArtistId = await requireArtist(ctx);
+    if (args.artistId !== myArtistId) throw new Error("Unauthorized");
+
     return ctx.db.insert("checklistItems", {
-      ...args,
+      showId: args.showId,
+      artistId: myArtistId,
+      label: requireNonEmpty(args.label, "Label"),
+      category: sanitizeStr(args.category, 100),
+      isCritical: args.isCritical,
+      sortOrder: args.sortOrder,
       isDone: false,
     });
   },
@@ -42,6 +54,10 @@ export const add = mutation({
 export const remove = mutation({
   args: { id: v.id("checklistItems") },
   handler: async (ctx, args) => {
+    const myArtistId = await requireArtist(ctx);
+    const item = await ctx.db.get(args.id);
+    if (!item) throw new Error("Item not found");
+    if (item.artistId !== myArtistId) throw new Error("Unauthorized");
     await ctx.db.delete(args.id);
   },
 });

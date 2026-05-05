@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireNonEmpty } from "./helpers";
 
 export const myProfile = query({
   args: {},
@@ -167,7 +168,9 @@ export const update = mutation({
       .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
       .unique();
     if (!user) throw new Error("User not found");
-    if (args.displayName !== undefined) await ctx.db.patch(user._id, { name: args.displayName });
+    if (args.displayName !== undefined) {
+      await ctx.db.patch(user._id, { name: requireNonEmpty(args.displayName, "Display name") });
+    }
   },
 });
 

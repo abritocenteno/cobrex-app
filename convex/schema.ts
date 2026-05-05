@@ -155,7 +155,14 @@ export default defineSchema({
     notes: v.optional(v.string()),
     mimeType: v.optional(v.string()),
     fileSize: v.optional(v.number()),
-  }).index("by_artist", ["artistId"]),
+    fileSizeBytes: v.optional(v.number()),
+    versionNumber: v.optional(v.number()),
+    isPublic: v.optional(v.boolean()),
+    shareToken: v.optional(v.string()),
+    shareExpiresAt: v.optional(v.number()),
+  })
+    .index("by_artist", ["artistId"])
+    .index("by_share_token", ["shareToken"]),
 
   alerts: defineTable({
     artistId: v.id("artists"),

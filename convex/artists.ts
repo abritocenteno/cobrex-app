@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { requireArtist, requireAuth, requireNonEmpty, requireSafeUrl, sanitizeStr } from "./helpers";
 
 export const list = query({
   args: {},
@@ -19,6 +20,7 @@ export const list = query({
 export const get = query({
   args: { id: v.id("artists") },
   handler: async (ctx, args) => {
+    await requireAuth(ctx);
     return ctx.db.get(args.id);
   },
 });
@@ -67,12 +69,27 @@ export const update = mutation({
     youtubeHandle: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const { id, ...fields } = args;
+    const myArtistId = await requireArtist(ctx);
+    if (args.id !== myArtistId) throw new Error("Unauthorized");
+
     const updates: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(fields)) {
-      if (v !== undefined) updates[k] = v;
-    }
-    await ctx.db.patch(id, updates);
+    if (args.name !== undefined) updates.name = requireNonEmpty(args.name, "Name");
+    if (args.bio !== undefined) updates.bio = sanitizeStr(args.bio, 2000);
+    if (args.location !== undefined) updates.location = sanitizeStr(args.location, 100);
+    if (args.country !== undefined) updates.country = sanitizeStr(args.country, 100);
+    if (args.genre !== undefined) updates.genre = sanitizeStr(args.genre, 100);
+    if (args.subGenre !== undefined) updates.subGenre = sanitizeStr(args.subGenre, 100);
+    if (args.avatarUrl !== undefined) updates.avatarUrl = args.avatarUrl ? requireSafeUrl(args.avatarUrl, "Avatar URL") : undefined;
+    if (args.avatarStorageId !== undefined) updates.avatarStorageId = args.avatarStorageId;
+    if (args.coverImageUrl !== undefined) updates.coverImageUrl = args.coverImageUrl ? requireSafeUrl(args.coverImageUrl, "Cover image URL") : undefined;
+    if (args.isPublic !== undefined) updates.isPublic = args.isPublic;
+    if (args.websiteUrl !== undefined) updates.websiteUrl = args.websiteUrl ? requireSafeUrl(args.websiteUrl, "Website URL") : undefined;
+    if (args.instagramHandle !== undefined) updates.instagramHandle = sanitizeStr(args.instagramHandle, 60);
+    if (args.spotifyArtistId !== undefined) updates.spotifyArtistId = sanitizeStr(args.spotifyArtistId, 100);
+    if (args.tiktokHandle !== undefined) updates.tiktokHandle = sanitizeStr(args.tiktokHandle, 60);
+    if (args.youtubeHandle !== undefined) updates.youtubeHandle = sanitizeStr(args.youtubeHandle, 60);
+
+    await ctx.db.patch(args.id, updates);
   },
 });
 
