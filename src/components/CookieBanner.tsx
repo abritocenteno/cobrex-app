@@ -1,13 +1,21 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Platform, Linking } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useCookieConsent } from '../hooks/useCookieConsent';
-
-const PRIVACY_POLICY_URL = 'https://cobrex.app/privacy';
 
 export function CookieBanner() {
   const { pending, accept, reject } = useCookieConsent();
+  const router = useRouter();
 
   if (Platform.OS !== 'web' || !pending) return null;
+
+  const openPrivacy = () => {
+    if (Platform.OS === 'web') {
+      Linking.openURL('https://cobrex.app/privacy');
+    } else {
+      router.push('/(app)/privacy-policy');
+    }
+  };
 
   return (
     <View
@@ -32,7 +40,7 @@ export function CookieBanner() {
         We use cookies to keep you signed in and improve your experience.{' '}
         <Text
           style={{ color: '#2563EB', textDecorationLine: 'underline' }}
-          onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+          onPress={openPrivacy}
         >
           Privacy Policy
         </Text>

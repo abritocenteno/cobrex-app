@@ -9,11 +9,13 @@
  */
 
 import type * as alerts from "../alerts.js";
+import type * as analyzeSong from "../analyzeSong.js";
 import type * as artists from "../artists.js";
 import type * as assets from "../assets.js";
 import type * as checklist from "../checklist.js";
 import type * as contacts from "../contacts.js";
 import type * as deals from "../deals.js";
+import type * as genres from "../genres.js";
 import type * as helpers from "../helpers.js";
 import type * as manager from "../manager.js";
 import type * as metrics from "../metrics.js";
@@ -34,11 +36,13 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   alerts: typeof alerts;
+  analyzeSong: typeof analyzeSong;
   artists: typeof artists;
   assets: typeof assets;
   checklist: typeof checklist;
   contacts: typeof contacts;
   deals: typeof deals;
+  genres: typeof genres;
   helpers: typeof helpers;
   manager: typeof manager;
   metrics: typeof metrics;

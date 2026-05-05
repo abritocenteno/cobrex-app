@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from 'convex/react';
+import { useMutation, useQuery, useAction } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -68,6 +68,7 @@ export default function AddSong() {
   const router = useRouter();
   const profile = useQuery(api.users.myProfile);
   const createSong = useMutation(api.setlist.createSong);
+  const analyzeSong = useAction(api.analyzeSong.analyze);
 
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
@@ -105,16 +106,24 @@ export default function AddSong() {
       const scThumbnail: string = data.thumbnail_url ?? '';
       const scDescription: string = data.description ?? '';
 
-      const detectedBpm = parseBpm(scDescription);
-      const detectedKey = parseKey(scDescription);
-
       const filled: string[] = [];
       if (scTitle) { setTitle(scTitle); filled.push('title'); }
-      if (!bpm && detectedBpm) { setBpm(detectedBpm); filled.push('BPM'); }
-      if (!keySignature && detectedKey) { setKeySignature(detectedKey); filled.push('key'); }
       if (!notes && scDescription) { setNotes(scDescription); filled.push('notes'); }
-
       setScPreview({ title: scTitle, author: scAuthor, thumbnail: scThumbnail, description: scDescription });
+
+      // Try AI analysis first, fall back to regex
+      try {
+        const ai = await analyzeSong({ title: scTitle, description: scDescription });
+        if (!bpm && ai.bpm) { setBpm(String(ai.bpm)); filled.push('BPM'); }
+        if (!keySignature && ai.keySignature) { setKeySignature(ai.keySignature); filled.push('key'); }
+        if (!energyLevel && ai.energyLevel) { setEnergyLevel(ai.energyLevel); filled.push('energy'); }
+      } catch {
+        const detectedBpm = parseBpm(scDescription);
+        const detectedKey = parseKey(scDescription);
+        if (!bpm && detectedBpm) { setBpm(detectedBpm); filled.push('BPM'); }
+        if (!keySignature && detectedKey) { setKeySignature(detectedKey); filled.push('key'); }
+      }
+
       showToast(filled.length ? `Filled: ${filled.join(', ')}` : 'Track found — review and save');
     } catch {
       setError('Failed to fetch SoundCloud info — check the URL and try again');

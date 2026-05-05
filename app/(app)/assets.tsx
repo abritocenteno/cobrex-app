@@ -83,22 +83,20 @@ export default function AssetsScreen() {
         </View>
 
         {/* Type filter */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }}>
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            {types.map((t) => (
-              <TouchableOpacity
-                key={t}
-                onPress={() => setTypeFilter(t)}
-                style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: typeFilter === t ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: typeFilter === t ? Colors.accent : Colors.border, flexDirection: 'row', alignItems: 'center', gap: 6 }}
-              >
-                {t !== 'all' && <FontAwesome name={(ASSET_TYPE_ICONS[t] ?? 'folder') as any} size={11} color={typeFilter === t ? '#000' : Colors.textMuted} />}
-                <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: typeFilter === t ? '#000' : Colors.textMuted }}>
-                  {t === 'all' ? 'All' : ASSET_TYPE_LABELS[t] ?? t}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+          {types.map((t) => (
+            <TouchableOpacity
+              key={t}
+              onPress={() => setTypeFilter(t)}
+              style={{ paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: typeFilter === t ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: typeFilter === t ? Colors.accent : Colors.border, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+            >
+              {t !== 'all' && <FontAwesome name={(ASSET_TYPE_ICONS[t] ?? 'folder') as any} size={11} color={typeFilter === t ? '#000' : Colors.textMuted} />}
+              <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: typeFilter === t ? '#000' : Colors.textMuted }}>
+                {t === 'all' ? 'All' : ASSET_TYPE_LABELS[t] ?? t}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 28, paddingTop: 0 }} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.accent} colors={[Colors.accent]} />}>

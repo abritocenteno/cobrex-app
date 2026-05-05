@@ -2,98 +2,52 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, TextInput } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '../../../src/constants/colors';
 import OnboardingHeader from '../../../src/components/OnboardingHeader';
-import DropdownSelect from '../../../src/components/DropdownSelect';
-
-const GENRE_OPTIONS = [
-  { value: 'Electronic', label: 'Electronic' },
-  { value: 'Hip-Hop', label: 'Hip-Hop' },
-  { value: 'Pop', label: 'Pop' },
-  { value: 'Rock', label: 'Rock' },
-  { value: 'Jazz', label: 'Jazz' },
-  { value: 'Classical', label: 'Classical' },
-  { value: 'R&B', label: 'R&B' },
-  { value: 'Folk', label: 'Folk' },
-  { value: 'Metal', label: 'Metal' },
-  { value: 'Reggae', label: 'Reggae' },
-  { value: 'Country', label: 'Country' },
-  { value: 'Latin', label: 'Latin' },
-  { value: 'Afrobeat', label: 'Afrobeat' },
-  { value: 'Punk', label: 'Punk' },
-  { value: 'Soul', label: 'Soul' },
-  { value: 'Indie', label: 'Indie' },
-  { value: 'Dance', label: 'Dance' },
-  { value: 'Ambient', label: 'Ambient' },
-  { value: 'World', label: 'World' },
-  { value: 'Other', label: 'Other' },
-];
-
-const SUBGENRE_OPTIONS: Record<string, { value: string; label: string }[]> = {
-  Electronic: [
-    { value: 'House', label: 'House' },
-    { value: 'Techno', label: 'Techno' },
-    { value: 'Drum & Bass', label: 'Drum & Bass' },
-    { value: 'Trance', label: 'Trance' },
-    { value: 'Ambient', label: 'Ambient' },
-    { value: 'Dubstep', label: 'Dubstep' },
-    { value: 'EDM', label: 'EDM' },
-    { value: 'Lo-fi', label: 'Lo-fi' },
-  ],
-  'Hip-Hop': [
-    { value: 'Trap', label: 'Trap' },
-    { value: 'Boom Bap', label: 'Boom Bap' },
-    { value: 'Conscious', label: 'Conscious' },
-    { value: 'Drill', label: 'Drill' },
-    { value: 'Cloud Rap', label: 'Cloud Rap' },
-  ],
-  Pop: [
-    { value: 'Synth Pop', label: 'Synth Pop' },
-    { value: 'Indie Pop', label: 'Indie Pop' },
-    { value: 'K-Pop', label: 'K-Pop' },
-    { value: 'Dream Pop', label: 'Dream Pop' },
-    { value: 'Art Pop', label: 'Art Pop' },
-  ],
-  Rock: [
-    { value: 'Alternative', label: 'Alternative' },
-    { value: 'Garage', label: 'Garage' },
-    { value: 'Psychedelic', label: 'Psychedelic' },
-    { value: 'Post-Rock', label: 'Post-Rock' },
-    { value: 'Grunge', label: 'Grunge' },
-  ],
-  Jazz: [
-    { value: 'Fusion', label: 'Fusion' },
-    { value: 'Bebop', label: 'Bebop' },
-    { value: 'Nu-Jazz', label: 'Nu-Jazz' },
-    { value: 'Smooth Jazz', label: 'Smooth Jazz' },
-    { value: 'Free Jazz', label: 'Free Jazz' },
-  ],
-};
 
 export default function OnboardingGenre() {
   const router = useRouter();
   const artist = useQuery(api.artists.list);
+  const approvedGenres = useQuery(api.genres.listApproved);
   const updateArtist = useMutation(api.artists.update);
+  const submitGenre = useMutation(api.genres.submit);
 
-  const [genres, setGenres] = useState<string[]>([]);
-  const [subGenres, setSubGenres] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [subGenre, setSubGenre] = useState('');
+  const [suggestion, setSuggestion] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   const artistData = artist?.[0];
 
   useEffect(() => {
     if (artistData) {
-      setGenres(artistData.genre ? artistData.genre.split(',').filter(Boolean) : []);
-      setSubGenres(artistData.subGenre ? artistData.subGenre.split(',').filter(Boolean) : []);
+      setSelected(artistData.genre ? artistData.genre.split(',').filter(Boolean) : []);
+      setSubGenre(artistData.subGenre ?? '');
     }
   }, [artistData]);
 
-  // Collect available subgenres from all selected genres
-  const availableSubgenres = genres.flatMap((g) => SUBGENRE_OPTIONS[g] ?? []);
-  const uniqueSubgenres = availableSubgenres.filter(
-    (opt, idx, arr) => arr.findIndex((o) => o.value === opt.value) === idx
-  );
+  const toggleGenre = (name: string) => {
+    setSelected((prev) =>
+      prev.includes(name) ? prev.filter((g) => g !== name) : [...prev, name]
+    );
+  };
+
+  const handleSuggest = async () => {
+    const name = suggestion.trim();
+    if (!name || name.length < 2) return;
+    setSubmitting(true);
+    try {
+      await submitGenre({ name });
+      setSubmitted((prev) => [...prev, name]);
+      setSuggestion('');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleNext = async () => {
     if (!artistData?._id) return;
@@ -101,8 +55,8 @@ export default function OnboardingGenre() {
     try {
       await updateArtist({
         id: artistData._id,
-        genre: genres.join(',') || undefined,
-        subGenre: subGenres.join(',') || undefined,
+        genre: selected.join(',') || undefined,
+        subGenre: subGenre.trim() || undefined,
       });
       router.push('/(app)/onboarding/social');
     } finally {
@@ -110,39 +64,89 @@ export default function OnboardingGenre() {
     }
   };
 
+  const genreList = approvedGenres ?? [];
+
   return (
     <View style={{ flex: 1, backgroundColor: Colors.bg, alignItems: 'center' }}>
       <OnboardingHeader step={2} totalSteps={5} title="Genre & Style" subtitle="Help venues and promoters find you more easily." onSkip={() => router.push('/(app)/onboarding/social')} />
       <ScrollView style={{ width: '100%' }} contentContainerStyle={{ padding: 24, maxWidth: 560, width: '100%', alignSelf: 'center' }}>
 
-        <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, marginBottom: 8 }}>Main Genre</Text>
-        <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted, marginBottom: 12 }}>Select all that apply</Text>
-        <DropdownSelect
-          options={GENRE_OPTIONS}
-          value={genres}
-          onChange={(v) => { setGenres(v); setSubGenres([]); }}
-          placeholder="Select genres..."
-          multi
-        />
+        <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, marginBottom: 4 }}>Main Genre</Text>
+        <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted, marginBottom: 14 }}>Select all that apply</Text>
 
-        {uniqueSubgenres.length > 0 && (
-          <>
-            <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, marginBottom: 8, marginTop: 8 }}>Subgenre / Style</Text>
-            <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted, marginBottom: 12 }}>Select all that apply</Text>
-            <DropdownSelect
-              options={uniqueSubgenres}
-              value={subGenres}
-              onChange={setSubGenres}
-              placeholder="Select subgenres..."
-              multi
-            />
-          </>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+          {genreList.map((g) => {
+            const active = selected.includes(g.name);
+            return (
+              <TouchableOpacity
+                key={g.name}
+                onPress={() => toggleGenre(g.name)}
+                style={{
+                  paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+                  backgroundColor: active ? Colors.accent : Colors.surface2,
+                  borderWidth: 1, borderColor: active ? Colors.accent : Colors.border,
+                }}
+              >
+                <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 13, color: active ? '#000' : Colors.textMuted }}>
+                  {g.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+          {submitted.map((name) => (
+            <View
+              key={`pending-${name}`}
+              style={{
+                paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+                backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border,
+                flexDirection: 'row', alignItems: 'center', gap: 6,
+              }}
+            >
+              <FontAwesome name="clock-o" size={11} color={Colors.textMuted} />
+              <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 13, color: Colors.textMuted }}>{name}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Suggest a genre */}
+        <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: Colors.textPrimary, marginBottom: 6 }}>
+          Don't see your genre?
+        </Text>
+        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 20 }}>
+          <TextInput
+            value={suggestion}
+            onChangeText={setSuggestion}
+            placeholder="Suggest a new genre..."
+            placeholderTextColor={Colors.textMuted}
+            style={{ flex: 1, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, padding: 12, color: Colors.textPrimary, fontFamily: 'DMSans_400Regular', fontSize: 14 }}
+          />
+          <TouchableOpacity
+            onPress={handleSuggest}
+            disabled={submitting || !suggestion.trim()}
+            style={{ backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, paddingHorizontal: 14, justifyContent: 'center', opacity: suggestion.trim() ? 1 : 0.4 }}
+          >
+            {submitting ? <ActivityIndicator size="small" color={Colors.accent} /> : <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: Colors.accent }}>Submit</Text>}
+          </TouchableOpacity>
+        </View>
+        {submitted.length > 0 && (
+          <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted, marginBottom: 16 }}>
+            <FontAwesome name="check-circle" size={12} color={Colors.textMuted} /> Suggestion submitted — it will appear once approved by our team.
+          </Text>
         )}
+
+        <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, marginBottom: 6 }}>Subgenre / Style</Text>
+        <TextInput
+          value={subGenre}
+          onChangeText={setSubGenre}
+          placeholder="e.g. House, Trap, Indie rock..."
+          placeholderTextColor={Colors.textMuted}
+          style={{ backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, padding: 12, color: Colors.textPrimary, fontFamily: 'DMSans_400Regular', fontSize: 14, marginBottom: 20 }}
+        />
 
         <TouchableOpacity
           onPress={handleNext}
           disabled={loading}
-          style={{ backgroundColor: Colors.accent, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 8 }}
+          style={{ backgroundColor: Colors.accent, borderRadius: 12, paddingVertical: 16, alignItems: 'center' }}
         >
           {loading ? <ActivityIndicator color="#000" /> : <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 15, color: '#000' }}>Next →</Text>}
         </TouchableOpacity>

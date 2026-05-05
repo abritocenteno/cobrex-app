@@ -5,34 +5,11 @@ import { useRouter } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, Image, Share, Clipboard } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '../../src/constants/colors';
 import Toast from '../../src/components/Toast';
 import { useToast } from '../../src/hooks/useToast';
 import ScreenContainer from '../../src/components/ScreenContainer';
-import DropdownSelect from '../../src/components/DropdownSelect';
-
-const GENRE_OPTIONS = [
-  { value: 'Electronic', label: 'Electronic' },
-  { value: 'Hip-Hop', label: 'Hip-Hop' },
-  { value: 'Pop', label: 'Pop' },
-  { value: 'Rock', label: 'Rock' },
-  { value: 'Jazz', label: 'Jazz' },
-  { value: 'Classical', label: 'Classical' },
-  { value: 'R&B', label: 'R&B' },
-  { value: 'Folk', label: 'Folk' },
-  { value: 'Metal', label: 'Metal' },
-  { value: 'Reggae', label: 'Reggae' },
-  { value: 'Country', label: 'Country' },
-  { value: 'Latin', label: 'Latin' },
-  { value: 'Afrobeat', label: 'Afrobeat' },
-  { value: 'Punk', label: 'Punk' },
-  { value: 'Soul', label: 'Soul' },
-  { value: 'Indie', label: 'Indie' },
-  { value: 'Dance', label: 'Dance' },
-  { value: 'Ambient', label: 'Ambient' },
-  { value: 'World', label: 'World' },
-  { value: 'Other', label: 'Other' },
-];
 
 export default function ProfileScreen() {
   const { signOut } = useAuth();
@@ -50,6 +27,8 @@ export default function ProfileScreen() {
   const generateUploadUrl = useMutation(api.assets.generateUploadUrl);
   const saveFile = useMutation(api.assets.saveFile);
   const completeOnboarding = useMutation(api.users.completeOnboarding);
+  const submitGenre = useMutation(api.genres.submit);
+  const approvedGenres = useQuery(api.genres.listApproved);
   const { toast, showToast, hideToast } = useToast();
 
   // User profile fields
@@ -69,6 +48,9 @@ export default function ProfileScreen() {
   const [website, setWebsite] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [saving, setSaving] = useState(false);
+  const [genreSuggestion, setGenreSuggestion] = useState('');
+  const [genreSubmitting, setGenreSubmitting] = useState(false);
+  const [submittedGenres, setSubmittedGenres] = useState<string[]>([]);
   const imagePickedRef = useRef(false);
 
   const artistData = artistData0;
@@ -263,20 +245,56 @@ export default function ProfileScreen() {
 
             {/* Genre */}
             <View style={sectionStyle}>
-              <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 12 }}>Genre</Text>
-              <DropdownSelect
-                options={GENRE_OPTIONS}
-                value={genres}
-                onChange={setGenres}
-                placeholder="Select genres..."
-                multi
-              />
-              {genres.length > 0 ? (
-                <>
-                  <Text style={{ ...labelStyle, marginTop: 8 }}>Subgenre / Style</Text>
-                  <TextInput value={subGenre} onChangeText={setSubGenre} placeholder="e.g. House, Trap, Indie..." placeholderTextColor={Colors.textMuted} style={inputStyle} />
-                </>
-              ) : null}
+              <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, marginBottom: 10 }}>Genre</Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+                {(approvedGenres ?? []).map((g) => {
+                  const active = genres.includes(g.name);
+                  return (
+                    <TouchableOpacity
+                      key={g.name}
+                      onPress={() => setGenres((prev) => active ? prev.filter((x) => x !== g.name) : [...prev, g.name])}
+                      style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: active ? Colors.accent : Colors.surface2, borderWidth: 1, borderColor: active ? Colors.accent : Colors.border }}
+                    >
+                      <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: active ? '#000' : Colors.textMuted }}>{g.name}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+                {submittedGenres.map((name) => (
+                  <View key={`p-${name}`} style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                    <FontAwesome name="clock-o" size={10} color={Colors.textMuted} />
+                    <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: Colors.textMuted }}>{name}</Text>
+                  </View>
+                ))}
+              </View>
+              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 4 }}>
+                <TextInput
+                  value={genreSuggestion}
+                  onChangeText={setGenreSuggestion}
+                  placeholder="Suggest a genre..."
+                  placeholderTextColor={Colors.textMuted}
+                  style={{ flex: 1, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, color: Colors.textPrimary, fontFamily: 'DMSans_400Regular', fontSize: 13 }}
+                />
+                <TouchableOpacity
+                  onPress={async () => {
+                    const name = genreSuggestion.trim();
+                    if (!name) return;
+                    setGenreSubmitting(true);
+                    try {
+                      await submitGenre({ name });
+                      setSubmittedGenres((prev) => [...prev, name]);
+                      setGenreSuggestion('');
+                    } finally {
+                      setGenreSubmitting(false);
+                    }
+                  }}
+                  disabled={genreSubmitting || !genreSuggestion.trim()}
+                  style={{ backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border, borderRadius: 10, paddingHorizontal: 12, justifyContent: 'center', opacity: genreSuggestion.trim() ? 1 : 0.4 }}
+                >
+                  {genreSubmitting ? <ActivityIndicator size="small" color={Colors.accent} /> : <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 12, color: Colors.accent }}>Submit</Text>}
+                </TouchableOpacity>
+              </View>
+              <Text style={{ ...labelStyle, marginTop: 8 }}>Subgenre / Style</Text>
+              <TextInput value={subGenre} onChangeText={setSubGenre} placeholder="e.g. House, Trap, Indie..." placeholderTextColor={Colors.textMuted} style={inputStyle} />
             </View>
 
             {/* Social */}
@@ -327,9 +345,13 @@ export default function ProfileScreen() {
         {/* Sign out */}
         <TouchableOpacity
           onPress={() => signOut()}
-          style={{ borderWidth: 1, borderColor: `${Colors.accentRed}40`, borderRadius: 12, padding: 16, alignItems: 'center', marginBottom: 8 }}
+          style={{ borderWidth: 1, borderColor: `${Colors.accentRed}40`, borderRadius: 12, padding: 16, alignItems: 'center', marginBottom: 16 }}
         >
           <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.accentRed }}>Sign Out</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => router.push('/(app)/privacy-policy')} style={{ alignItems: 'center', marginBottom: 8 }}>
+          <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted, textDecorationLine: 'underline' }}>Privacy Policy</Text>
         </TouchableOpacity>
 
         <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 11, color: Colors.textMuted, textAlign: 'center', marginBottom: 24 }}>
