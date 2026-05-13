@@ -35,9 +35,9 @@ export async function requireAuth(ctx: QueryCtx | MutationCtx) {
 
 export const SHOW_STATUSES = new Set(["draft", "confirmed", "completed", "cancelled", "postponed"]);
 export const PAYMENT_STATUSES = new Set(["unpaid", "deposit_paid", "paid_in_full", "overpaid", "refunded"]);
-export const DEAL_TYPES = new Set(["flat_fee", "percentage", "guarantee_plus_percentage", "merchandise", "other"]);
+export const DEAL_TYPES = new Set(["flat_fee", "percentage", "guarantee_plus_percentage", "merchandise", "live", "other"]);
 export const ASSET_TYPES = new Set(["tech_rider", "stage_plot", "input_list", "hospitality_rider", "press_kit", "press_photo", "contract", "invoice", "setlist", "other"]);
-export const CONTACT_TYPES = new Set(["promoter", "venue", "agent", "label", "pr", "other"]);
+export const CONTACT_TYPES = new Set(["promoter", "venue", "agent", "label", "pr", "tour_manager", "other"]);
 export const ALERT_SEVERITIES = new Set(["info", "warning", "critical"]);
 export const TIMELINE_STATUSES = new Set(["pending", "in_progress", "done", "cancelled"]);
 export const CURRENCIES = new Set(["EUR", "USD", "GBP", "CHF", "SEK", "NOK", "DKK", "PLN", "CZK", "HUF"]);

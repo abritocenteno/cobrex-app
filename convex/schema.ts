@@ -76,6 +76,10 @@ export default defineSchema({
     energyLevel: v.optional(v.number()),
     hasBackingTrack: v.optional(v.boolean()),
     notes: v.optional(v.string()),
+    // legacy fields from old backend
+    isActive: v.optional(v.boolean()),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
   }).index("by_artist", ["artistId"]),
 
   setlistVersions: defineTable({
@@ -130,6 +134,9 @@ export default defineSchema({
     actualReceived: v.optional(v.number()),
     depositReceivedAt: v.optional(v.number()),
     fullyPaidAt: v.optional(v.number()),
+    // legacy fields from old backend
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
   }).index("by_artist", ["artistId"]),
 
   contacts: defineTable({
@@ -143,6 +150,10 @@ export default defineSchema({
     country: v.optional(v.string()),
     notes: v.optional(v.string()),
     rating: v.optional(v.number()),
+    // legacy fields from old backend
+    status: v.optional(v.string()),
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
   })
     .index("by_artist", ["artistId"])
     .index("by_artist_and_type", ["artistId", "contactType"]),
@@ -161,6 +172,9 @@ export default defineSchema({
     isPublic: v.optional(v.boolean()),
     shareToken: v.optional(v.string()),
     shareExpiresAt: v.optional(v.number()),
+    // legacy fields from old backend
+    createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
   })
     .index("by_artist", ["artistId"])
     .index("by_share_token", ["shareToken"]),
@@ -174,6 +188,7 @@ export default defineSchema({
     category: v.optional(v.string()),
     alertType: v.optional(v.string()),
     createdAt: v.optional(v.number()),
+    updatedAt: v.optional(v.number()),
     relatedEntityId: v.optional(v.string()),
     relatedEntityType: v.optional(v.string()),
   })
