@@ -18,11 +18,13 @@ export default function MyManagerScreen() {
   const managers = useQuery(api.manager.list);
   const sendRequest = useMutation(api.rosterInvites.send);
   const respond = useMutation(api.rosterInvites.respond);
+  const retract = useMutation(api.rosterInvites.retract);
 
   const [search, setSearch] = useState('');
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState<string | null>(null);
   const [respondingId, setRespondingId] = useState<string | null>(null);
+  const [retractingId, setRetractingId] = useState<string | null>(null);
   const [sent, setSent] = useState<Set<string>>(new Set());
   const [error, setError] = useState('');
 
@@ -69,6 +71,15 @@ export default function MyManagerScreen() {
       await respond({ inviteId: inviteId as any, accept });
     } finally {
       setRespondingId(null);
+    }
+  };
+
+  const handleRetract = async (inviteId: string) => {
+    setRetractingId(inviteId);
+    try {
+      await retract({ inviteId: inviteId as any });
+    } finally {
+      setRetractingId(null);
     }
   };
 
@@ -197,9 +208,15 @@ export default function MyManagerScreen() {
                   </Text>
                   <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted }}>Awaiting response</Text>
                 </View>
-                <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: `${Colors.orange}18` }}>
-                  <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 11, color: Colors.orange }}>Pending</Text>
-                </View>
+                <TouchableOpacity
+                  onPress={() => handleRetract(inv._id)}
+                  disabled={retractingId === inv._id}
+                  style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border }}
+                >
+                  {retractingId === inv._id
+                    ? <ActivityIndicator color={Colors.textMuted} size="small" />
+                    : <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: Colors.textMuted }}>Cancel</Text>}
+                </TouchableOpacity>
               </View>
             ))}
           </View>

@@ -23,7 +23,9 @@ export default function RosterScreen() {
     managerProfile?._id ? { managerId: managerProfile._id } : 'skip'
   );
   const respond = useMutation(api.rosterInvites.respond);
+  const retract = useMutation(api.rosterInvites.retract);
   const [respondingId, setRespondingId] = useState<string | null>(null);
+  const [retractingId, setRetractingId] = useState<string | null>(null);
 
   const pendingIncoming = (invites ?? []).filter(
     (inv: any) => inv.direction === 'artist_to_manager' && inv.status === 'pending'
@@ -38,6 +40,15 @@ export default function RosterScreen() {
       await respond({ inviteId: inviteId as any, accept });
     } finally {
       setRespondingId(null);
+    }
+  };
+
+  const handleRetract = async (inviteId: string) => {
+    setRetractingId(inviteId);
+    try {
+      await retract({ inviteId: inviteId as any });
+    } finally {
+      setRetractingId(null);
     }
   };
 
@@ -71,17 +82,23 @@ export default function RosterScreen() {
       <ScrollView contentContainerStyle={{ padding: 28, paddingTop: 0 }}>
 
         {/* Manager info */}
-        {managerProfile?.companyName && (
-          <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, padding: 16, marginBottom: 20, flexDirection: 'row', alignItems: 'center' }}>
-            <FontAwesome name="bullseye" size={24} color={Colors.accent} style={{ marginRight: 12 }} />
-            <View>
-              <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary }}>{managerProfile.companyName}</Text>
-              {managerProfile.commissionRate ? (
-                <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted }}>Commission: {managerProfile.commissionRate}%</Text>
-              ) : null}
-            </View>
+        <TouchableOpacity
+          onPress={() => router.push('/(app)/roster/edit-profile' as any)}
+          style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, padding: 16, marginBottom: 20, flexDirection: 'row', alignItems: 'center' }}
+        >
+          <FontAwesome name="bullseye" size={24} color={Colors.accent} style={{ marginRight: 12 }} />
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 15, color: Colors.textPrimary }}>
+              {managerProfile?.companyName ?? 'Your Profile'}
+            </Text>
+            {managerProfile?.commissionRate ? (
+              <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted }}>Commission: {managerProfile.commissionRate}%</Text>
+            ) : (
+              <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted }}>Tap to edit your profile</Text>
+            )}
           </View>
-        )}
+          <FontAwesome name="pencil" size={14} color={Colors.textMuted} />
+        </TouchableOpacity>
 
         {/* Incoming requests from artists */}
         {pendingIncoming.length > 0 && (
@@ -142,9 +159,15 @@ export default function RosterScreen() {
                   <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 14, color: Colors.textPrimary }}>{inv.artist?.name ?? 'Unknown'}</Text>
                   <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted }}>Awaiting response</Text>
                 </View>
-                <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: `${Colors.orange}18` }}>
-                  <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 11, color: Colors.orange }}>Pending</Text>
-                </View>
+                <TouchableOpacity
+                  onPress={() => handleRetract(inv._id)}
+                  disabled={retractingId === inv._id}
+                  style={{ paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border }}
+                >
+                  {retractingId === inv._id
+                    ? <ActivityIndicator color={Colors.textMuted} size="small" />
+                    : <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: Colors.textMuted }}>Cancel</Text>}
+                </TouchableOpacity>
               </View>
             ))}
           </View>
@@ -170,7 +193,11 @@ export default function RosterScreen() {
           </View>
         ) : (
           roster.map((artist: any) => (
-            <View key={artist._id} style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 20, marginBottom: 12 }}>
+            <TouchableOpacity
+              key={artist._id}
+              onPress={() => router.push(`/(app)/roster/${artist._id}` as any)}
+              style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 16, padding: 20, marginBottom: 12 }}
+            >
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
                 <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: `${Colors.accent}18`, justifyContent: 'center', alignItems: 'center', marginRight: 14 }}>
                   <FontAwesome name="microphone" size={22} color={Colors.accent} />
@@ -181,8 +208,11 @@ export default function RosterScreen() {
                     <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted }}>{artist.genre}</Text>
                   ) : null}
                 </View>
-                <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: `${Colors.green}18` }}>
-                  <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 11, color: Colors.green }}>Signed</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: `${Colors.green}18` }}>
+                    <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 11, color: Colors.green }}>Signed</Text>
+                  </View>
+                  <FontAwesome name="chevron-right" size={12} color={Colors.textMuted} />
                 </View>
               </View>
 
@@ -203,7 +233,7 @@ export default function RosterScreen() {
                   <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 10, color: Colors.textMuted }}>unpaid</Text>
                 </View>
               </View>
-            </View>
+            </TouchableOpacity>
           ))
         )}
       </ScrollView>

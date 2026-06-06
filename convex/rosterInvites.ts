@@ -60,6 +60,35 @@ export const send = mutation({
       status: "pending",
       createdAt: Date.now(),
     });
+
+    // Notify the recipient
+    const managerProfile = await ctx.db.get(args.managerId);
+    if (args.direction === "manager_to_artist") {
+      // Manager invited artist — tell the artist
+      if (artistUser) {
+        await ctx.db.insert("notifications", {
+          userId: artistUser.tokenIdentifier,
+          title: "Manager Invite",
+          body: `${managerProfile?.companyName ?? "A manager"} wants to represent you`,
+          type: "roster_invite",
+          isRead: false,
+          relatedId: args.managerId,
+        });
+      }
+    } else {
+      // Artist requested manager — tell the manager
+      if (managerProfile) {
+        const artist = await ctx.db.get(args.artistId);
+        await ctx.db.insert("notifications", {
+          userId: managerProfile.userId,
+          title: "Artist Request",
+          body: `${artist?.name ?? "An artist"} wants you to represent them`,
+          type: "roster_request",
+          isRead: false,
+          relatedId: args.artistId,
+        });
+      }
+    }
   },
 });
 
@@ -84,5 +113,69 @@ export const respond = mutation({
         await ctx.db.patch(artistUser._id, { managerProfileId: invite.managerId });
       }
     }
+
+    // Notify the other party
+    const managerProfile = await ctx.db.get(invite.managerId);
+    const artist = await ctx.db.get(invite.artistId);
+    const verb = args.accept ? "accepted" : "declined";
+
+    if (invite.direction === "manager_to_artist") {
+      // Artist responded to manager's invite — tell the manager
+      if (managerProfile) {
+        await ctx.db.insert("notifications", {
+          userId: managerProfile.userId,
+          title: args.accept ? "Invite Accepted" : "Invite Declined",
+          body: `${artist?.name ?? "Artist"} has ${verb} your invite`,
+          type: "roster_response",
+          isRead: false,
+          relatedId: invite.artistId,
+        });
+      }
+    } else {
+      // Manager responded to artist's request — tell the artist
+      const artistUser = await ctx.db
+        .query("users")
+        .withIndex("by_artist", (q) => q.eq("artistId", invite.artistId))
+        .unique();
+      if (artistUser) {
+        await ctx.db.insert("notifications", {
+          userId: artistUser.tokenIdentifier,
+          title: args.accept ? "Request Accepted" : "Request Declined",
+          body: `${managerProfile?.companyName ?? "The manager"} has ${verb} your request`,
+          type: "roster_response",
+          isRead: false,
+          relatedId: invite.managerId,
+        });
+      }
+    }
+  },
+});
+
+export const retract = mutation({
+  args: { inviteId: v.id("rosterInvites") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const invite = await ctx.db.get(args.inviteId);
+    if (!invite) throw new Error("Invite not found");
+    if (invite.status !== "pending") throw new Error("Can only retract pending invites");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+      .unique();
+
+    if (invite.direction === "manager_to_artist") {
+      if (!user?.managerProfileId || user.managerProfileId !== invite.managerId) {
+        throw new Error("Not authorized");
+      }
+    } else {
+      if (!user?.artistId || user.artistId !== invite.artistId) {
+        throw new Error("Not authorized");
+      }
+    }
+
+    await ctx.db.patch(args.inviteId, { status: "declined" });
   },
 });
