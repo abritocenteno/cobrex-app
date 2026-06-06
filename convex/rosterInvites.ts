@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 export const forManager = query({
   args: { managerId: v.id("managerProfiles") },
@@ -66,26 +67,28 @@ export const send = mutation({
     if (args.direction === "manager_to_artist") {
       // Manager invited artist — tell the artist
       if (artistUser) {
+        const title = "Manager Invite";
+        const body = `${managerProfile?.companyName ?? "A manager"} wants to represent you`;
         await ctx.db.insert("notifications", {
           userId: artistUser.tokenIdentifier,
-          title: "Manager Invite",
-          body: `${managerProfile?.companyName ?? "A manager"} wants to represent you`,
-          type: "roster_invite",
-          isRead: false,
-          relatedId: args.managerId,
+          title, body, type: "roster_invite", isRead: false, relatedId: args.managerId,
+        });
+        await ctx.scheduler.runAfter(0, internal.pushNotifications.sendPush, {
+          userId: artistUser.tokenIdentifier, title, body,
         });
       }
     } else {
       // Artist requested manager — tell the manager
       if (managerProfile) {
         const artist = await ctx.db.get(args.artistId);
+        const title = "Artist Request";
+        const body = `${artist?.name ?? "An artist"} wants you to represent them`;
         await ctx.db.insert("notifications", {
           userId: managerProfile.userId,
-          title: "Artist Request",
-          body: `${artist?.name ?? "An artist"} wants you to represent them`,
-          type: "roster_request",
-          isRead: false,
-          relatedId: args.artistId,
+          title, body, type: "roster_request", isRead: false, relatedId: args.artistId,
+        });
+        await ctx.scheduler.runAfter(0, internal.pushNotifications.sendPush, {
+          userId: managerProfile.userId, title, body,
         });
       }
     }
@@ -122,13 +125,14 @@ export const respond = mutation({
     if (invite.direction === "manager_to_artist") {
       // Artist responded to manager's invite — tell the manager
       if (managerProfile) {
+        const title = args.accept ? "Invite Accepted" : "Invite Declined";
+        const body = `${artist?.name ?? "Artist"} has ${verb} your invite`;
         await ctx.db.insert("notifications", {
           userId: managerProfile.userId,
-          title: args.accept ? "Invite Accepted" : "Invite Declined",
-          body: `${artist?.name ?? "Artist"} has ${verb} your invite`,
-          type: "roster_response",
-          isRead: false,
-          relatedId: invite.artistId,
+          title, body, type: "roster_response", isRead: false, relatedId: invite.artistId,
+        });
+        await ctx.scheduler.runAfter(0, internal.pushNotifications.sendPush, {
+          userId: managerProfile.userId, title, body,
         });
       }
     } else {
@@ -138,13 +142,14 @@ export const respond = mutation({
         .withIndex("by_artist", (q) => q.eq("artistId", invite.artistId))
         .unique();
       if (artistUser) {
+        const title = args.accept ? "Request Accepted" : "Request Declined";
+        const body = `${managerProfile?.companyName ?? "The manager"} has ${verb} your request`;
         await ctx.db.insert("notifications", {
           userId: artistUser.tokenIdentifier,
-          title: args.accept ? "Request Accepted" : "Request Declined",
-          body: `${managerProfile?.companyName ?? "The manager"} has ${verb} your request`,
-          type: "roster_response",
-          isRead: false,
-          relatedId: invite.managerId,
+          title, body, type: "roster_response", isRead: false, relatedId: invite.managerId,
+        });
+        await ctx.scheduler.runAfter(0, internal.pushNotifications.sendPush, {
+          userId: artistUser.tokenIdentifier, title, body,
         });
       }
     }

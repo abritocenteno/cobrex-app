@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 
@@ -35,10 +36,13 @@ export function usePushNotifications() {
 
       if (finalStatus !== 'granted') return;
 
-      // Get the Expo push token (projectId is required for SDK 53+)
-      const tokenData = await Notifications.getExpoPushTokenAsync({
-        projectId: 'cobrex-app',
-      });
+      const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+      if (!projectId) {
+        console.warn('[push] expo.extra.eas.projectId is not set in app.json — skipping token registration');
+        return;
+      }
+
+      const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
 
       await registerToken({
         token: tokenData.data,

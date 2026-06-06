@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { requireVenue } from "./helpers";
 
 export const myProfile = query({
@@ -132,13 +133,14 @@ export const confirmShow = mutation({
         .unique();
       if (artistUser) {
         const venue = await ctx.db.get(venueId);
+        const title = "Show Confirmed";
+        const body = `${venue?.name ?? "The venue"} confirmed your show: ${show.name}`;
         await ctx.db.insert("notifications", {
           userId: artistUser.tokenIdentifier,
-          title: "Show Confirmed",
-          body: `${venue?.name ?? "The venue"} confirmed your show: ${show.name}`,
-          type: "venue_confirm",
-          isRead: false,
-          relatedId: vs.showId,
+          title, body, type: "venue_confirm", isRead: false, relatedId: vs.showId,
+        });
+        await ctx.scheduler.runAfter(0, internal.pushNotifications.sendPush, {
+          userId: artistUser.tokenIdentifier, title, body,
         });
       }
     }
@@ -212,13 +214,14 @@ export const recordSettlement = mutation({
       if (artistUser) {
         const venue = await ctx.db.get(venueId);
         const displayAmount = (args.amount / 100).toLocaleString("en-US", { style: "currency", currency: "EUR" });
+        const title = "Settlement Recorded";
+        const body = `${venue?.name ?? "The venue"} recorded a settlement of ${displayAmount} for ${show.name}`;
         await ctx.db.insert("notifications", {
           userId: artistUser.tokenIdentifier,
-          title: "Settlement Recorded",
-          body: `${venue?.name ?? "The venue"} recorded a settlement of ${displayAmount} for ${show.name}`,
-          type: "venue_settlement",
-          isRead: false,
-          relatedId: vs.showId,
+          title, body, type: "venue_settlement", isRead: false, relatedId: vs.showId,
+        });
+        await ctx.scheduler.runAfter(0, internal.pushNotifications.sendPush, {
+          userId: artistUser.tokenIdentifier, title, body,
         });
       }
     }
