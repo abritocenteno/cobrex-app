@@ -11,7 +11,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.cobrex.app",
       "infoPlist": {
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -45,6 +47,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c82bbd9b-1d56-4a6b-9f47-bfa739e9a78e"
+      }
+    },
+    "owner": "abelbrito"
   }
 }
