@@ -246,8 +246,13 @@ export default defineSchema({
     confirmedByVenue: v.boolean(),
     techRiderReceived: v.optional(v.boolean()),
     stagePlotReceived: v.optional(v.boolean()),
+    inputListReceived: v.optional(v.boolean()),
+    hospitalityRiderReceived: v.optional(v.boolean()),
     cateringConfirmed: v.optional(v.boolean()),
     accessibilitiesConfirmed: v.optional(v.boolean()),
+    settlementPaid: v.optional(v.boolean()),
+    settlementAmount: v.optional(v.number()),
+    ticketsSold: v.optional(v.number()),
   })
     .index("by_venue", ["venueProfileId"])
     .index("by_show", ["showId"]),

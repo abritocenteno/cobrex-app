@@ -25,6 +25,17 @@ export async function requireManager(ctx: QueryCtx | MutationCtx): Promise<Id<"m
   return user.managerProfileId;
 }
 
+export async function requireVenue(ctx: QueryCtx | MutationCtx): Promise<Id<"venueProfiles">> {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) throw new Error("Not authenticated");
+  const user = await ctx.db
+    .query("users")
+    .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+    .unique();
+  if (!user?.venueProfileId) throw new Error("Venue profile required");
+  return user.venueProfileId;
+}
+
 export async function requireAuth(ctx: QueryCtx | MutationCtx) {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) throw new Error("Not authenticated");

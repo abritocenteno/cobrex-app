@@ -41,6 +41,7 @@ export default function ShowDetail() {
   const router = useRouter();
   const [showSongPicker, setShowSongPicker] = useState(false);
   const show = useQuery(api.shows.get, id ? { id: id as any } : 'skip');
+  const venueStatus = useQuery(api.venue.statusForShow, id ? { showId: id as any } : 'skip');
   const timeline = useQuery(api.timeline.list, id ? { showId: id as any } : 'skip');
   const profile = useQuery(api.users.myProfile);
   const setlistVersion = useQuery(api.setlist.getVersionForShow, id ? { showId: id as any } : 'skip');
@@ -99,13 +100,21 @@ export default function ShowDetail() {
           </TouchableOpacity>
         </View>
         <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 24, color: Colors.textPrimary, marginBottom: 6 }}>{show.name}</Text>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
+        <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
           <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: `${statusColor}18` }}>
             <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: statusColor, textTransform: 'capitalize' }}>{show.status}</Text>
           </View>
           <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: `${paymentColor}18` }}>
             <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: paymentColor }}>{show.paymentStatus?.replace(/_/g, ' ')}</Text>
           </View>
+          {venueStatus !== undefined && venueStatus !== null && (
+            <View style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, backgroundColor: venueStatus.confirmedByVenue ? `${Colors.green}18` : `${Colors.orange}18`, flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <FontAwesome name="building" size={10} color={venueStatus.confirmedByVenue ? Colors.green : Colors.orange} />
+              <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: venueStatus.confirmedByVenue ? Colors.green : Colors.orange }}>
+                {venueStatus.venueName ? `${venueStatus.venueName}${venueStatus.confirmedByVenue ? ' ✓' : ''}` : venueStatus.confirmedByVenue ? 'Venue confirmed' : 'Awaiting venue'}
+              </Text>
+            </View>
+          )}
         </View>
       </View>
 

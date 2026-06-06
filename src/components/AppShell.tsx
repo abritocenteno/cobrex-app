@@ -36,9 +36,9 @@ const NAV_ITEMS_MANAGER = [
 
 const NAV_ITEMS_VENUE = [
   { label: 'Dashboard', icon: 'bolt', route: '/(app)/dashboard' },
-  { label: 'Shows', icon: 'microphone', route: '/(app)/shows' },
   { label: 'Requests', icon: 'envelope', route: '/(app)/requests' },
-  { label: 'Notifications', icon: 'envelope', route: '/(app)/notifications' },
+  { label: 'Settings', icon: 'building', route: '/(app)/venue-settings' },
+  { label: 'Notifications', icon: 'bell', route: '/(app)/notifications' },
   { label: 'Profile', icon: 'user', route: '/(app)/profile' },
 ];
 
