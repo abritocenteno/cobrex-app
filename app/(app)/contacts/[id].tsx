@@ -50,7 +50,7 @@ export default function ContactDetail() {
     return <View style={{ flex: 1, backgroundColor: Colors.bg, justifyContent: 'center', alignItems: 'center' }}><Text style={{ color: Colors.textMuted }}>Contact not found</Text></View>;
   }
 
-  const statusColor = STATUS_COLORS[contact.status] ?? Colors.textMuted;
+  const statusColor = STATUS_COLORS[contact.status ?? ''] ?? Colors.textMuted;
 
   const handleStatusChange = (status: string) => {
     updateContact({ id: contact._id, status: status as any });

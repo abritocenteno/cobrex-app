@@ -14,6 +14,7 @@
     "@expo-google-fonts/bebas-neue": "^0.4.1",
     "@expo-google-fonts/dm-sans": "^0.4.2",
     "@expo/metro-runtime": "^55.0.6",
+    "@expo/vector-icons": "^15.1.1",
     "@react-native-community/datetimepicker": "8.6.0",
     "babel-preset-expo": "^55.0.12",
     "convex": "^1.34.0",

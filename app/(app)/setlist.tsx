@@ -16,7 +16,7 @@ export default function SetlistScreen() {
   const profile = useQuery(api.users.myProfile);
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
-  const removeSong = useMutation(api.setlist.removeSong);
+  const removeSong = useMutation(api.setlist.removeItem);
   const songs = useQuery(
     api.setlist.songs,
     profile?.artistId ? { artistId: profile.artistId } : 'skip'

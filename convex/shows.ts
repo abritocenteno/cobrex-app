@@ -47,6 +47,7 @@ export const create = mutation({
     notes: v.optional(v.string()),
     venueName: v.optional(v.string()),
     venueAddress: v.optional(v.string()),
+    venueProfileId: v.optional(v.id("venueProfiles")),
     ticketUrl: v.optional(v.string()),
     capacity: v.optional(v.number()),
   },
@@ -64,7 +65,7 @@ export const create = mutation({
       ? requirePositive(args.capacity, "Capacity")
       : undefined;
 
-    return ctx.db.insert("shows", {
+    const showId = await ctx.db.insert("shows", {
       artistId: myArtistId,
       name,
       showDate,
@@ -81,6 +82,16 @@ export const create = mutation({
       status: "draft",
       paymentStatus: "unpaid",
     });
+
+    if (args.venueProfileId) {
+      await ctx.db.insert("venueShows", {
+        venueProfileId: args.venueProfileId,
+        showId,
+        confirmedByVenue: false,
+      });
+    }
+
+    return showId;
   },
 });
 
@@ -99,6 +110,7 @@ export const update = mutation({
     paymentStatus: v.optional(v.string()),
     venueName: v.optional(v.string()),
     venueAddress: v.optional(v.string()),
+    venueProfileId: v.optional(v.id("venueProfiles")),
     ticketUrl: v.optional(v.string()),
     capacity: v.optional(v.number()),
   },
@@ -125,5 +137,23 @@ export const update = mutation({
     if (args.venueAddress !== undefined) updates.venueAddress = sanitizeStr(args.venueAddress, 400);
 
     await ctx.db.patch(args.id, updates);
+
+    if (args.venueProfileId) {
+      const existing = await ctx.db
+        .query("venueShows")
+        .withIndex("by_show", (q) => q.eq("showId", args.id))
+        .unique();
+      if (existing) {
+        if (existing.venueProfileId !== args.venueProfileId) {
+          await ctx.db.patch(existing._id, { venueProfileId: args.venueProfileId, confirmedByVenue: false });
+        }
+      } else {
+        await ctx.db.insert("venueShows", {
+          venueProfileId: args.venueProfileId,
+          showId: args.id,
+          confirmedByVenue: false,
+        });
+      }
+    }
   },
 });

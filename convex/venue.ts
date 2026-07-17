@@ -85,10 +85,27 @@ export const statusForShow = query({
     if (!vs) return null;
     const venue = await ctx.db.get(vs.venueProfileId);
     return {
+      venueProfileId: vs.venueProfileId,
       confirmedByVenue: vs.confirmedByVenue,
       venueName: venue?.name ?? null,
       venueCity: venue?.city ?? (venue as any)?.location ?? null,
     };
+  },
+});
+
+export const search = query({
+  args: { query: v.string() },
+  handler: async (ctx, args) => {
+    const q = args.query.trim().toLowerCase();
+    if (!q) return [];
+    const venues = await ctx.db.query("venueProfiles").take(300);
+    return venues
+      .filter((v) =>
+        v.name?.toLowerCase().includes(q) ||
+        v.city?.toLowerCase().includes(q)
+      )
+      .slice(0, 6)
+      .map((v) => ({ _id: v._id, name: v.name ?? null, city: v.city ?? null, capacity: v.capacity ?? null }));
   },
 });
 

@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalQuery, internalMutation } from "./_generated/server";
 import {
   requireArtist,
   requireAuth,
@@ -156,5 +156,28 @@ export const getByToken = query({
     if (!asset) return null;
     if (asset.shareExpiresAt && asset.shareExpiresAt < Date.now()) return null;
     return asset;
+  },
+});
+
+export const getAssetInternal = internalQuery({
+  args: { id: v.id("assets") },
+  handler: async (ctx, args) => {
+    return ctx.db.get(args.id);
+  },
+});
+
+export const saveExtraction = internalMutation({
+  args: {
+    id: v.id("assets"),
+    status: v.string(),
+    extractedData: v.optional(v.any()),
+    extractionError: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, {
+      extractionStatus: args.status,
+      extractedData: args.extractedData,
+      extractionError: args.extractionError,
+    });
   },
 });

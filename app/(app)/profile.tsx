@@ -20,7 +20,7 @@ export default function ProfileScreen() {
   const storedAvatarId = artistData0?.avatarUrl;
   const storageUrl = useQuery(
     api.artists.getStorageUrl,
-    storedAvatarId && !storedAvatarId.startsWith('http') && !storedAvatarId.startsWith('data') ? { storageId: storedAvatarId } : 'skip'
+    storedAvatarId && !storedAvatarId.startsWith('http') && !storedAvatarId.startsWith('data') ? { storageId: storedAvatarId as any } : 'skip'
   );
   const updateProfile = useMutation(api.users.update);
   const updateArtist = useMutation(api.artists.update);

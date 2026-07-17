@@ -28,7 +28,7 @@ export default function OnboardingProfile() {
   const storageUrl = useQuery(
     api.artists.getStorageUrl,
     storedAvatarId && !storedAvatarId.startsWith('http') && !storedAvatarId.startsWith('data')
-      ? { storageId: storedAvatarId }
+      ? { storageId: storedAvatarId as any }
       : 'skip'
   );
   const displayAvatarUrl = imagePickedRef.current ? avatarUrl : (storageUrl ?? (storedAvatarId?.startsWith('http') ? storedAvatarId : null));

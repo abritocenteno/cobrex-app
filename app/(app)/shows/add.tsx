@@ -12,6 +12,8 @@ import { useDraftSave, getDraft } from '../../../src/hooks/useDraftSave';
 
 const DRAFT_KEY = 'shows_add';
 
+type VenueResult = { _id: string; name: string | null; city: string | null; capacity: number | null };
+
 export default function AddShow() {
   const router = useRouter();
   const { restore } = useLocalSearchParams<{ restore?: string }>();
@@ -29,6 +31,40 @@ export default function AddShow() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { toast, showToast, hideToast } = useToast();
+
+  // Venue picker state
+  const [venueSearch, setVenueSearch] = useState('');
+  const [venueSearchDebounced, setVenueSearchDebounced] = useState('');
+  const [selectedVenue, setSelectedVenue] = useState<VenueResult | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVenueSearchDebounced(venueSearch), 300);
+    return () => clearTimeout(t);
+  }, [venueSearch]);
+
+  const venueResults = useQuery(
+    api.venue.search,
+    venueSearchDebounced.length >= 2 && !selectedVenue ? { query: venueSearchDebounced } : 'skip'
+  );
+
+  const handleVenueTextChange = (text: string) => {
+    setVenueSearch(text);
+    if (selectedVenue) setSelectedVenue(null);
+    setShowDropdown(true);
+  };
+
+  const handleSelectVenue = (venue: VenueResult) => {
+    setSelectedVenue(venue);
+    setVenueSearch(venue.name ?? '');
+    setShowDropdown(false);
+  };
+
+  const clearVenue = () => {
+    setSelectedVenue(null);
+    setVenueSearch('');
+    setShowDropdown(false);
+  };
 
   // Restore draft if navigated here with ?restore=1
   useEffect(() => {
@@ -69,6 +105,8 @@ export default function AddShow() {
         doorsTime: doorsTime || undefined,
         setLengthMinutes: setLength ? parseInt(setLength) : undefined,
         notes: notes || undefined,
+        venueName: selectedVenue?.name ?? (venueSearch.trim() || undefined),
+        venueProfileId: selectedVenue ? (selectedVenue._id as any) : undefined,
       });
       clearDraft();
       showToast('Show created successfully!');
@@ -99,9 +137,69 @@ export default function AddShow() {
         {error ? <Text style={{ color: Colors.accentRed, fontFamily: 'DMSans_400Regular', fontSize: 13, marginBottom: 16, textAlign: 'center' }}>{error}</Text> : null}
 
         <Text style={labelStyle}>Show Name *</Text>
-        <TextInput value={name} onChangeText={setName} placeholder="e.g. Paradiso Amsterdam" placeholderTextColor={Colors.textMuted} style={inputStyle} />
+        <TextInput value={name} onChangeText={setName} placeholder="e.g. Summer Festival Set" placeholderTextColor={Colors.textMuted} style={inputStyle} />
 
         <DatePickerField label="Date *" value={showDate} onChange={setShowDate} />
+
+        {/* Venue picker */}
+        <Text style={labelStyle}>Venue</Text>
+        <View style={{
+          backgroundColor: Colors.surface2,
+          borderWidth: 1,
+          borderColor: selectedVenue ? Colors.accent : Colors.border,
+          borderRadius: 12,
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginBottom: 4,
+        }}>
+          <TextInput
+            value={venueSearch}
+            onChangeText={handleVenueTextChange}
+            onFocus={() => setShowDropdown(true)}
+            onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
+            placeholder="Search venues on Cobrex..."
+            placeholderTextColor={Colors.textMuted}
+            style={{ flex: 1, padding: 14, color: Colors.textPrimary, fontFamily: 'DMSans_400Regular', fontSize: 14 }}
+          />
+          {selectedVenue ? (
+            <TouchableOpacity onPress={clearVenue} style={{ paddingHorizontal: 14 }}>
+              <Text style={{ color: Colors.textMuted, fontSize: 20, lineHeight: 20 }}>×</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+
+        {/* Dropdown results */}
+        {showDropdown && venueResults && venueResults.length > 0 && (
+          <View style={{ backgroundColor: Colors.surface2, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, marginBottom: 12, overflow: 'hidden' }}>
+            {venueResults.map((venue, i) => (
+              <TouchableOpacity
+                key={venue._id}
+                onPress={() => handleSelectVenue(venue as VenueResult)}
+                style={{ padding: 14, borderBottomWidth: i < venueResults.length - 1 ? 1 : 0, borderBottomColor: Colors.border }}
+              >
+                <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 14, color: Colors.textPrimary }}>{venue.name}</Text>
+                {venue.city ? (
+                  <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted, marginTop: 2 }}>
+                    {venue.city}{venue.capacity ? ` · ${venue.capacity} cap` : ''}
+                  </Text>
+                ) : null}
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        {/* Status line below the field */}
+        {selectedVenue ? (
+          <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.green, marginBottom: 12 }}>
+            ✓ Linked to {selectedVenue.name}
+          </Text>
+        ) : venueSearch.length >= 2 && venueResults !== undefined && venueResults.length === 0 && showDropdown ? (
+          <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted, marginBottom: 12 }}>
+            No venues found — show will be saved without a venue link
+          </Text>
+        ) : (
+          <View style={{ marginBottom: 12 }} />
+        )}
 
         <View style={{ flexDirection: 'row', gap: 12 }}>
           <View style={{ flex: 1 }}>

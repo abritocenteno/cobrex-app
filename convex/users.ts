@@ -30,6 +30,8 @@ export const myProfile = query({
         artistId: legacyArtist._id,
         onboardingDone: true,
         onboardingDismissed: true,
+        managerProfileId: undefined as any,
+        venueProfileId: undefined as any,
       };
     }
 

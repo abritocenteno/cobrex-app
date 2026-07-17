@@ -82,6 +82,7 @@ export const update = mutation({
     country: v.optional(v.string()),
     notes: v.optional(v.string()),
     rating: v.optional(v.number()),
+    status: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const myArtistId = await requireArtist(ctx);
@@ -103,6 +104,7 @@ export const update = mutation({
     if (args.city !== undefined) updates.city = sanitizeStr(args.city, 100);
     if (args.country !== undefined) updates.country = sanitizeStr(args.country, 100);
     if (args.notes !== undefined) updates.notes = sanitizeStr(args.notes, 2000);
+    if (args.status !== undefined) updates.status = sanitizeStr(args.status, 50);
 
     await ctx.db.patch(args.id, updates);
   },

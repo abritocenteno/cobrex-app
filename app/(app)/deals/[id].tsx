@@ -143,7 +143,7 @@ export default function DealDetail() {
               <TouchableOpacity
                 onPress={() => {
                   const amount = fullInput ? Math.round(parseFloat(fullInput) * 100) : deal.agreedTotal;
-                  markFullyPaid({ id: deal._id, total: amount });
+                  markFullyPaid({ id: deal._id, amount: amount });
                   setFullInput('');
                 }}
                 style={{ backgroundColor: Colors.green, paddingHorizontal: 16, borderRadius: 10, justifyContent: 'center' }}
@@ -152,7 +152,7 @@ export default function DealDetail() {
               </TouchableOpacity>
             </View>
             <TouchableOpacity
-              onPress={() => markFullyPaid({ id: deal._id, total: deal.agreedTotal })}
+              onPress={() => markFullyPaid({ id: deal._id, amount: deal.agreedTotal })}
               style={{ marginTop: 10, paddingVertical: 10, borderRadius: 10, alignItems: 'center', borderWidth: 1, borderColor: `${Colors.green}40` }}
             >
               <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 13, color: Colors.green }}>Mark full agreed amount ({formatMoney(deal.agreedTotal, deal.currency)})</Text>

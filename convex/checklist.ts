@@ -16,13 +16,22 @@ export const items = query({
 });
 
 export const toggle = mutation({
-  args: { id: v.id("checklistItems") },
+  args: {
+    id: v.id("checklistItems"),
+    checkedByName: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
     const myArtistId = await requireArtist(ctx);
     const item = await ctx.db.get(args.id);
     if (!item) throw new Error("Item not found");
     if (item.artistId !== myArtistId) throw new Error("Unauthorized");
-    await ctx.db.patch(args.id, { isDone: !item.isDone });
+    const nowDone = !item.isDone;
+    await ctx.db.patch(args.id, {
+      isDone: nowDone,
+      isChecked: nowDone,
+      checkedByName: nowDone ? (args.checkedByName ?? undefined) : undefined,
+      checkedAt: nowDone ? Date.now() : undefined,
+    });
   },
 });
 

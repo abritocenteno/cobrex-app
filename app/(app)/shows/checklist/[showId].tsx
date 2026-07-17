@@ -161,7 +161,7 @@ export default function ShowChecklist() {
               {(catItems as any[]).map((item: any) => (
                 <View key={item._id} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: Colors.surface, borderWidth: 1, borderColor: item.isChecked ? `${Colors.green}30` : item.isCritical ? `${Colors.accentRed}30` : Colors.border, borderRadius: 12, padding: 14, marginBottom: 8 }}>
                   <TouchableOpacity
-                    onPress={() => toggle({ id: item._id, checked: !item.isChecked, checkedByName: profile?.displayName })}
+                    onPress={() => toggle({ id: item._id, checkedByName: profile?.name ?? undefined })}
                     style={{ width: 24, height: 24, borderRadius: 6, borderWidth: 2, borderColor: item.isChecked ? Colors.green : Colors.textMuted, backgroundColor: item.isChecked ? Colors.green : 'transparent', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}
                   >
                     {item.isChecked && <FontAwesome name="check" size={12} color="#000" />}
