@@ -33,6 +33,148 @@ function SectionHeader({ title, action, onAction }: { title: string; action?: st
   );
 }
 
+// ─── Intelligence Panel ──────────────────────────────────────────────────────
+
+function InsightCard({
+  icon,
+  iconColor,
+  iconBg,
+  title,
+  subtitle,
+  onPress,
+}: {
+  icon: string;
+  iconColor: string;
+  iconBg: string;
+  title: string;
+  subtitle: string;
+  onPress?: () => void;
+}) {
+  const inner = (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+      <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: iconBg, justifyContent: 'center', alignItems: 'center' }}>
+        <FontAwesome name={icon as any} size={16} color={iconColor} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 14, color: Colors.textPrimary, marginBottom: 2 }}>{title}</Text>
+        <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted }}>{subtitle}</Text>
+      </View>
+      {onPress && <FontAwesome name="chevron-right" size={12} color={Colors.textMuted} />}
+    </View>
+  );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity
+        onPress={onPress}
+        style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, padding: 14, marginBottom: 8 }}
+      >
+        {inner}
+      </TouchableOpacity>
+    );
+  }
+  return (
+    <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, padding: 14, marginBottom: 8 }}>
+      {inner}
+    </View>
+  );
+}
+
+function IntelligencePanel({ artistId }: { artistId: any }) {
+  const router = useRouter();
+  const insights = useQuery(api.intelligence.artistInsights, artistId ? { artistId } : 'skip');
+
+  if (!artistId || insights === undefined) return null;
+
+  const { unpaidUpcomingShows, conflictDates, unpaidDeals, expiringDocs, problemVisas } = insights;
+
+  const hasAny =
+    unpaidUpcomingShows.length > 0 ||
+    conflictDates.length > 0 ||
+    unpaidDeals.length > 0 ||
+    expiringDocs.length > 0 ||
+    problemVisas.length > 0;
+
+  if (!hasAny) return null;
+
+  const fmtDate = (str: string) => {
+    const [y, m, d] = str.split('-');
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${months[parseInt(m) - 1]} ${parseInt(d)}`;
+  };
+
+  const docExpiryLabel = (ms: number) => {
+    const days = Math.ceil((ms - Date.now()) / (24 * 60 * 60 * 1000));
+    return days <= 30 ? `Expires in ${days} day${days !== 1 ? 's' : ''}` : `Expires in ~${Math.ceil(days / 30)} month${Math.ceil(days / 30) !== 1 ? 's' : ''}`;
+  };
+
+  return (
+    <View style={{ marginBottom: 28 }}>
+      <SectionHeader title="Needs Attention" />
+
+      {conflictDates.map(({ date, shows }) => (
+        <InsightCard
+          key={`conflict-${date}`}
+          icon="exclamation-triangle"
+          iconColor={Colors.accentRed}
+          iconBg={`${Colors.accentRed}18`}
+          title={`Show conflict on ${fmtDate(date)}`}
+          subtitle={`${shows.length} shows booked for the same date`}
+          onPress={() => router.push('/(app)/shows')}
+        />
+      ))}
+
+      {unpaidUpcomingShows.map((show: any) => (
+        <InsightCard
+          key={`unpaid-show-${show._id}`}
+          icon="dollar"
+          iconColor={Colors.orange}
+          iconBg={`${Colors.orange}18`}
+          title={`Payment due — ${show.name}`}
+          subtitle={`Show on ${fmtDate(show.showDate)} · payment not received`}
+          onPress={() => router.push(`/(app)/shows/${show._id}` as any)}
+        />
+      ))}
+
+      {unpaidDeals.slice(0, 3).map((deal: any) => (
+        <InsightCard
+          key={`deal-${deal._id}`}
+          icon="handshake-o"
+          iconColor={Colors.orange}
+          iconBg={`${Colors.orange}18`}
+          title={`Outstanding deal · ${deal.currency} ${deal.agreedTotal.toLocaleString()}`}
+          subtitle={deal.paymentStatus === 'deposit_paid' ? 'Deposit received — balance pending' : 'Awaiting payment'}
+          onPress={() => router.push('/(app)/deals')}
+        />
+      ))}
+
+      {expiringDocs.slice(0, 3).map((doc: any) => (
+        <InsightCard
+          key={`doc-${doc._id}`}
+          icon="id-card-o"
+          iconColor={Colors.accentRed}
+          iconBg={`${Colors.accentRed}18`}
+          title={`${doc.type === 'passport' ? 'Passport' : 'Travel document'} expiring`}
+          subtitle={docExpiryLabel(doc.expiresAt)}
+          onPress={() => router.push('/(app)/travel' as any)}
+        />
+      ))}
+
+      {problemVisas.slice(0, 3).map((vc: any) => (
+        <InsightCard
+          key={`visa-${vc._id}`}
+          icon="globe"
+          iconColor={Colors.accentRed}
+          iconBg={`${Colors.accentRed}18`}
+          title={`Visa issue — ${vc.destinationCountry}`}
+          subtitle={vc.status.replace(/_/g, ' ')}
+          onPress={() => router.push('/(app)/travel' as any)}
+        />
+      ))}
+    </View>
+  );
+}
+
 // ─── Artist Dashboard ────────────────────────────────────────────────────────
 
 function ArtistDashboard({ profile, isWide }: { profile: any; isWide: boolean }) {
@@ -61,6 +203,9 @@ function ArtistDashboard({ profile, isWide }: { profile: any; isWide: boolean })
           </Text>
         </TouchableOpacity>
       ) : null}
+
+      {/* Intelligence panel */}
+      <IntelligencePanel artistId={artistId} />
 
       {/* Stat cards */}
       {shows === undefined ? (

@@ -64,7 +64,8 @@ export default defineSchema({
     updatedAt: v.optional(v.number()),
   })
     .index("by_artist", ["artistId"])
-    .index("by_artist_and_date", ["artistId", "showDate"]),
+    .index("by_artist_and_date", ["artistId", "showDate"])
+    .searchIndex("search_name", { searchField: "name", filterFields: ["artistId"] }),
 
   songs: defineTable({
     artistId: v.id("artists"),
@@ -80,7 +81,9 @@ export default defineSchema({
     isActive: v.optional(v.boolean()),
     createdAt: v.optional(v.number()),
     updatedAt: v.optional(v.number()),
-  }).index("by_artist", ["artistId"]),
+  })
+    .index("by_artist", ["artistId"])
+    .searchIndex("search_title", { searchField: "title", filterFields: ["artistId"] }),
 
   setlistVersions: defineTable({
     artistId: v.id("artists"),
@@ -159,7 +162,8 @@ export default defineSchema({
     updatedAt: v.optional(v.number()),
   })
     .index("by_artist", ["artistId"])
-    .index("by_artist_and_type", ["artistId", "contactType"]),
+    .index("by_artist_and_type", ["artistId", "contactType"])
+    .searchIndex("search_displayName", { searchField: "displayName", filterFields: ["artistId"] }),
 
   assets: defineTable({
     artistId: v.id("artists"),
@@ -183,7 +187,8 @@ export default defineSchema({
     updatedAt: v.optional(v.number()),
   })
     .index("by_artist", ["artistId"])
-    .index("by_share_token", ["shareToken"]),
+    .index("by_share_token", ["shareToken"])
+    .searchIndex("search_name", { searchField: "name", filterFields: ["artistId"] }),
 
   alerts: defineTable({
     artistId: v.id("artists"),
@@ -289,4 +294,166 @@ export default defineSchema({
   })
     .index("by_manager", ["managerId"])
     .index("by_artist", ["artistId"]),
+
+  // ── Travel Operations ──────────────────────────────────────────────────────
+
+  tourParties: defineTable({
+    artistId: v.id("artists"),
+    showId: v.optional(v.id("shows")),
+    name: v.string(),
+    status: v.string(), // planning | confirmed | travelling | completed | cancelled
+    departureDate: v.optional(v.number()),
+    returnDate: v.optional(v.number()),
+    notes: v.optional(v.string()),
+    shareToken: v.optional(v.string()),
+    shareExpiresAt: v.optional(v.number()),
+  })
+    .index("by_artist", ["artistId"])
+    .index("by_show", ["showId"])
+    .index("by_share_token", ["shareToken"])
+    .searchIndex("search_name", { searchField: "name", filterFields: ["artistId"] }),
+
+  travelers: defineTable({
+    tourPartyId: v.id("tourParties"),
+    artistId: v.id("artists"),
+    role: v.string(), // artist | band_member | dj | dancer | tour_manager | pa | security | stylist | makeup | photographer | videographer | crew | guest
+    name: v.string(),
+    email: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    emergencyContact: v.optional(v.string()),
+    clerkUserId: v.optional(v.string()),
+  })
+    .index("by_tour_party", ["tourPartyId"])
+    .index("by_artist", ["artistId"]),
+
+  travelDocuments: defineTable({
+    travelerId: v.id("travelers"),
+    artistId: v.id("artists"),
+    type: v.string(), // passport | national_id | driving_license
+    issuingCountry: v.string(),
+    nationality: v.string(),
+    numberLast4: v.string(),
+    numberEncrypted: v.string(),
+    expiresAt: v.number(),
+    verified: v.optional(v.boolean()),
+    storageId: v.optional(v.id("_storage")),
+    notes: v.optional(v.string()),
+  })
+    .index("by_traveler", ["travelerId"])
+    .index("by_artist", ["artistId"]),
+
+  visaCases: defineTable({
+    travelerId: v.id("travelers"),
+    artistId: v.id("artists"),
+    showId: v.optional(v.id("shows")),
+    destinationCountry: v.string(),
+    visaType: v.optional(v.string()),
+    status: v.string(), // not_required | review_required | documents_requested | application_prepared | appointment_booked | submitted | under_review | approved | refused | expired
+    applicationDate: v.optional(v.number()),
+    appointmentDate: v.optional(v.number()),
+    decisionDate: v.optional(v.number()),
+    expiresAt: v.optional(v.number()),
+    workPermitRequired: v.optional(v.boolean()),
+    workPermitStatus: v.optional(v.string()),
+    invitationLetterRequired: v.optional(v.boolean()),
+    immigrationContact: v.optional(v.string()),
+    notes: v.optional(v.string()),
+  })
+    .index("by_traveler", ["travelerId"])
+    .index("by_artist", ["artistId"])
+    .index("by_show", ["showId"]),
+
+  flightBookings: defineTable({
+    travelerId: v.id("travelers"),
+    tourPartyId: v.id("tourParties"),
+    artistId: v.id("artists"),
+    airline: v.string(),
+    flightNumber: v.string(),
+    bookingRef: v.optional(v.string()),
+    departureAirport: v.string(),
+    arrivalAirport: v.string(),
+    departureAt: v.number(),
+    arrivalAt: v.number(),
+    terminal: v.optional(v.string()),
+    seat: v.optional(v.string()),
+    baggageAllowance: v.optional(v.string()),
+    oversizedBaggage: v.optional(v.boolean()),
+    status: v.string(), // proposed | reserved | booked | checked_in | boarded | delayed | cancelled | arrived | rebooked
+    notes: v.optional(v.string()),
+  })
+    .index("by_traveler", ["travelerId"])
+    .index("by_tour_party", ["tourPartyId"])
+    .index("by_artist", ["artistId"]),
+
+  hotelBookings: defineTable({
+    artistId: v.id("artists"),
+    tourPartyId: v.id("tourParties"),
+    showId: v.optional(v.id("shows")),
+    hotelName: v.string(),
+    address: v.optional(v.string()),
+    reservationNumber: v.optional(v.string()),
+    checkInDate: v.number(),
+    checkOutDate: v.number(),
+    hotelPhone: v.optional(v.string()),
+    paymentResponsibility: v.optional(v.string()),
+    roomingListStatus: v.optional(v.string()),
+    notes: v.optional(v.string()),
+  })
+    .index("by_artist", ["artistId"])
+    .index("by_tour_party", ["tourPartyId"])
+    .index("by_show", ["showId"]),
+
+  roomAssignments: defineTable({
+    hotelBookingId: v.id("hotelBookings"),
+    travelerId: v.id("travelers"),
+    artistId: v.id("artists"),
+    roomType: v.optional(v.string()),
+    roomNumber: v.optional(v.string()),
+    breakfastIncluded: v.optional(v.boolean()),
+    lateCheckIn: v.optional(v.boolean()),
+    accessibilityNotes: v.optional(v.string()),
+    dietaryNotes: v.optional(v.string()),
+  })
+    .index("by_hotel_booking", ["hotelBookingId"])
+    .index("by_traveler", ["travelerId"]),
+
+  transportJobs: defineTable({
+    tourPartyId: v.id("tourParties"),
+    artistId: v.id("artists"),
+    showId: v.optional(v.id("shows")),
+    type: v.string(), // airport_transfer | hotel_to_venue | venue_to_hotel | other
+    pickupLocation: v.string(),
+    dropoffLocation: v.string(),
+    scheduledPickupAt: v.number(),
+    driverName: v.optional(v.string()),
+    driverPhone: v.optional(v.string()),
+    vehicleDescription: v.optional(v.string()),
+    licensePlate: v.optional(v.string()),
+    passengerCount: v.optional(v.number()),
+    luggageCount: v.optional(v.number()),
+    travelerIds: v.optional(v.array(v.id("travelers"))),
+    status: v.string(), // scheduled | driver_assigned | driver_en_route | driver_arrived | in_transit | delayed | arrived | completed | cancelled
+    notes: v.optional(v.string()),
+  })
+    .index("by_tour_party", ["tourPartyId"])
+    .index("by_artist", ["artistId"])
+    .index("by_show", ["showId"]),
+
+  itineraryItems: defineTable({
+    artistId: v.id("artists"),
+    tourPartyId: v.id("tourParties"),
+    showId: v.optional(v.id("shows")),
+    type: v.string(), // flight_arrival | flight_departure | hotel_checkin | hotel_checkout | transport | soundcheck | performance | meal | other
+    title: v.string(),
+    scheduledAt: v.number(),
+    linkedEntityType: v.optional(v.string()),
+    linkedEntityId: v.optional(v.string()),
+    conflictDetected: v.optional(v.boolean()),
+    conflictNote: v.optional(v.string()),
+    visibleTo: v.optional(v.array(v.string())),
+    notes: v.optional(v.string()),
+  })
+    .index("by_tour_party", ["tourPartyId"])
+    .index("by_artist", ["artistId"])
+    .index("by_show", ["showId"]),
 });

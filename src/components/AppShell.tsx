@@ -12,9 +12,11 @@ import { FontAwesome } from '@expo/vector-icons';
 
 const NAV_ITEMS_ARTIST = [
   { label: 'Dashboard', icon: 'bolt', route: '/(app)/dashboard' },
+  { label: 'Search', icon: 'search', route: '/(app)/search' },
   { label: 'Shows', icon: 'microphone', route: '/(app)/shows' },
   { label: 'Contacts', icon: 'users', route: '/(app)/contacts' },
   { label: 'Deals', icon: 'handshake-o', route: '/(app)/deals' },
+  { label: 'Travel', icon: 'plane', route: '/(app)/travel' },
   { label: 'Assets', icon: 'folder', route: '/(app)/assets' },
   { label: 'Setlist', icon: 'music', route: '/(app)/setlist' },
   { label: 'My Manager', icon: 'bullseye', route: '/(app)/my-manager' },
@@ -26,9 +28,11 @@ const NAV_ITEMS_ARTIST = [
 
 const NAV_ITEMS_MANAGER = [
   { label: 'Dashboard', icon: 'bolt', route: '/(app)/dashboard' },
+  { label: 'Search', icon: 'search', route: '/(app)/search' },
   { label: 'Roster', icon: 'users', route: '/(app)/roster' },
   { label: 'Shows', icon: 'microphone', route: '/(app)/shows' },
   { label: 'Deals', icon: 'handshake-o', route: '/(app)/deals' },
+  { label: 'Travel', icon: 'plane', route: '/(app)/travel' },
   { label: 'Metrics', icon: 'bar-chart', route: '/(app)/metrics' },
   { label: 'Notifications', icon: 'envelope', route: '/(app)/notifications' },
   { label: 'Profile', icon: 'user', route: '/(app)/profile' },
