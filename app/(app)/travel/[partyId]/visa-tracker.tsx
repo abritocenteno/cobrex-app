@@ -22,11 +22,152 @@ const VISA_STATUSES = [
 
 const STATUS_MAP = Object.fromEntries(VISA_STATUSES.map((s) => [s.value, s]));
 
+const PERMIT_STATUSES = [
+  { value: 'not_started', label: 'Not Started' },
+  { value: 'applied', label: 'Applied' },
+  { value: 'approved', label: 'Approved' },
+  { value: 'denied', label: 'Denied' },
+];
+
 function VisaStatusBadge({ status }: { status: string }) {
   const meta = STATUS_MAP[status] ?? { label: status, color: Colors.textMuted };
   return (
     <View style={{ backgroundColor: `${meta.color}18`, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, borderWidth: 1, borderColor: `${meta.color}40` }}>
       <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 11, color: meta.color }}>{meta.label}</Text>
+    </View>
+  );
+}
+
+function VisaCaseRow({ vc, updateVisa, onStatusCycle, onRemove }: { vc: any; updateVisa: any; onStatusCycle: (id: Id<'visaCases'>, status: string) => void; onRemove: (id: Id<'visaCases'>, country: string) => void }) {
+  const [permitExpanded, setPermitExpanded] = useState(false);
+  const [permitStatus, setPermitStatus] = useState(vc.workPermitStatus ?? '');
+  const [permitSponsor, setPermitSponsor] = useState(vc.workPermitSponsor ?? '');
+  const [permitDeadline, setPermitDeadline] = useState(
+    vc.workPermitDeadline ? new Date(vc.workPermitDeadline).toISOString().split('T')[0] : ''
+  );
+  const [savingPermit, setSavingPermit] = useState(false);
+
+  const handleToggleWorkPermit = async () => {
+    try {
+      await updateVisa({ id: vc._id, workPermitRequired: !vc.workPermitRequired });
+    } catch (err: any) {
+      Alert.alert('Error', err?.message ?? 'Could not update');
+    }
+  };
+
+  const handleSavePermit = async () => {
+    setSavingPermit(true);
+    try {
+      const dl = permitDeadline.trim()
+        ? new Date(permitDeadline.trim() + 'T12:00:00').getTime()
+        : undefined;
+      await updateVisa({
+        id: vc._id,
+        workPermitStatus: permitStatus || undefined,
+        workPermitSponsor: permitSponsor.trim() || undefined,
+        workPermitDeadline: isNaN(dl as number) ? undefined : dl,
+      });
+      setPermitExpanded(false);
+    } catch (err: any) {
+      Alert.alert('Error', err?.message ?? 'Could not save');
+    } finally {
+      setSavingPermit(false);
+    }
+  };
+
+  const permitStatusMeta = PERMIT_STATUSES.find((s) => s.value === vc.workPermitStatus);
+
+  return (
+    <View style={{ borderBottomWidth: 1, borderBottomColor: Colors.border }}>
+      {/* Main row */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, gap: 10 }}>
+        <FontAwesome name="globe" size={14} color={Colors.textMuted} />
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: Colors.textPrimary }}>
+            {vc.destinationCountry}
+          </Text>
+          {vc.visaType && (
+            <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 11, color: Colors.textMuted }}>{vc.visaType}</Text>
+          )}
+        </View>
+        <TouchableOpacity onPress={() => onStatusCycle(vc._id, vc.status)}>
+          <VisaStatusBadge status={vc.status} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => onRemove(vc._id, vc.destinationCountry)} style={{ padding: 4 }}>
+          <FontAwesome name="trash-o" size={14} color={Colors.textMuted} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Work permit toggle row */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingBottom: 10, paddingLeft: 24, gap: 8 }}>
+        <TouchableOpacity onPress={handleToggleWorkPermit} style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>
+          <View style={{
+            width: 18, height: 18, borderRadius: 4,
+            backgroundColor: vc.workPermitRequired ? Colors.accent : 'transparent',
+            borderWidth: 1, borderColor: vc.workPermitRequired ? Colors.accent : Colors.border,
+            justifyContent: 'center', alignItems: 'center',
+          }}>
+            {vc.workPermitRequired && <FontAwesome name="check" size={10} color="#000" />}
+          </View>
+          <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: Colors.textMuted }}>Work Permit</Text>
+          {vc.workPermitRequired && permitStatusMeta && (
+            <View style={{ backgroundColor: `${Colors.accent}18`, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1, borderColor: `${Colors.accent}30` }}>
+              <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 10, color: Colors.accent }}>{permitStatusMeta.label}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+        {vc.workPermitRequired && (
+          <TouchableOpacity
+            onPress={() => setPermitExpanded(!permitExpanded)}
+            style={{ marginLeft: 'auto' }}
+          >
+            <FontAwesome name={permitExpanded ? 'chevron-up' : 'pencil'} size={11} color={Colors.textMuted} />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Work permit detail editor */}
+      {vc.workPermitRequired && permitExpanded && (
+        <View style={{ backgroundColor: Colors.surface2, borderRadius: 10, padding: 12, marginBottom: 10, marginLeft: 24, marginRight: 4 }}>
+          <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 11, color: Colors.textMuted, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 }}>
+            Work Permit Details
+          </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+            {PERMIT_STATUSES.map((ps) => (
+              <TouchableOpacity
+                key={ps.value}
+                onPress={() => setPermitStatus(ps.value)}
+                style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, backgroundColor: permitStatus === ps.value ? Colors.accent : Colors.surface, borderWidth: 1, borderColor: permitStatus === ps.value ? Colors.accent : Colors.border }}
+              >
+                <Text style={{ fontFamily: 'DMSans_500Medium', fontSize: 12, color: permitStatus === ps.value ? '#000' : Colors.textMuted }}>{ps.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <TextInput
+            value={permitSponsor}
+            onChangeText={setPermitSponsor}
+            placeholder="Sponsoring organization"
+            placeholderTextColor={Colors.textMuted}
+            style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, fontFamily: 'DMSans_400Regular' as const, fontSize: 13, color: Colors.textPrimary, marginBottom: 8 }}
+          />
+          <TextInput
+            value={permitDeadline}
+            onChangeText={setPermitDeadline}
+            placeholder="Application deadline (YYYY-MM-DD)"
+            placeholderTextColor={Colors.textMuted}
+            style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 9, fontFamily: 'DMSans_400Regular' as const, fontSize: 13, color: Colors.textPrimary, marginBottom: 10 }}
+          />
+          <TouchableOpacity
+            onPress={handleSavePermit}
+            disabled={savingPermit}
+            style={{ backgroundColor: Colors.accent, borderRadius: 8, paddingVertical: 9, alignItems: 'center' }}
+          >
+            {savingPermit
+              ? <ActivityIndicator size="small" color="#000" />
+              : <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: '#000' }}>Save Permit Details</Text>}
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }
@@ -139,33 +280,13 @@ function TravelerVisaSection({ traveler, partyId }: { traveler: any; partyId: st
             </Text>
           ) : (
             visaCases.map((vc) => (
-              <View
+              <VisaCaseRow
                 key={vc._id}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  paddingVertical: 10,
-                  borderBottomWidth: 1,
-                  borderBottomColor: Colors.border,
-                  gap: 10,
-                }}
-              >
-                <FontAwesome name="globe" size={14} color={Colors.textMuted} />
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: Colors.textPrimary }}>
-                    {vc.destinationCountry}
-                  </Text>
-                  {vc.visaType && (
-                    <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 11, color: Colors.textMuted }}>{vc.visaType}</Text>
-                  )}
-                </View>
-                <TouchableOpacity onPress={() => handleStatusCycle(vc._id, vc.status)}>
-                  <VisaStatusBadge status={vc.status} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleRemove(vc._id, vc.destinationCountry)} style={{ padding: 4 }}>
-                  <FontAwesome name="trash-o" size={14} color={Colors.textMuted} />
-                </TouchableOpacity>
-              </View>
+                vc={vc}
+                updateVisa={updateVisa}
+                onStatusCycle={handleStatusCycle}
+                onRemove={handleRemove}
+              />
             ))
           )}
 

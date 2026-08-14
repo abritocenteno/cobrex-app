@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from 'convex/react';
+import { useQuery, useMutation, useAction } from 'convex/react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { api } from '../../../../convex/_generated/api';
 import { Id } from '../../../../convex/_generated/dataModel';
@@ -101,8 +101,11 @@ export default function ItineraryScreen() {
   const items = useQuery(api.travel.listItinerary, { tourPartyId: id });
   const buildItinerary = useMutation(api.travel.buildItinerary);
   const createShare = useMutation(api.travel.createItineraryShare);
+  const optimizeItinerary = useAction(api.aiTravel.optimizeItinerary);
   const [building, setBuilding] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [optimizing, setOptimizing] = useState(false);
+  const [suggestions, setSuggestions] = useState<Array<{ severity: string; category: string; title: string; detail: string }> | null>(null);
 
   const groups = groupByDay(items ?? []);
   const conflictCount = (items ?? []).filter((i) => i.conflictDetected).length;
@@ -116,6 +119,22 @@ export default function ItineraryScreen() {
       Alert.alert('Error', err?.message ?? 'Something went wrong');
     } finally {
       setBuilding(false);
+    }
+  };
+
+  const handleOptimize = async () => {
+    setOptimizing(true);
+    setSuggestions(null);
+    try {
+      const result = await optimizeItinerary({ tourPartyId: id });
+      setSuggestions(result.suggestions);
+      if (result.suggestions.length === 0) {
+        Alert.alert('All Clear', 'No significant issues found with this itinerary.');
+      }
+    } catch (err: any) {
+      Alert.alert('Error', err?.message ?? 'Could not analyse itinerary');
+    } finally {
+      setOptimizing(false);
     }
   };
 
@@ -158,6 +177,16 @@ export default function ItineraryScreen() {
             <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: Colors.textMuted }}>Share</Text>
           </TouchableOpacity>
           <TouchableOpacity
+            onPress={handleOptimize}
+            disabled={optimizing || (items ?? []).length === 0}
+            style={{ backgroundColor: `${Colors.accent}15`, borderWidth: 1, borderColor: `${Colors.accent}40`, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, flexDirection: 'row', alignItems: 'center', gap: 6 }}
+          >
+            {optimizing
+              ? <ActivityIndicator size="small" color={Colors.accent} style={{ width: 13, height: 13 }} />
+              : <FontAwesome name="magic" size={13} color={Colors.accent} />}
+            <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: Colors.accent }}>AI</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
             onPress={handleBuild}
             disabled={building}
             style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, flexDirection: 'row', alignItems: 'center', gap: 6 }}
@@ -173,6 +202,32 @@ export default function ItineraryScreen() {
       </View>
 
       <ScrollView contentContainerStyle={{ padding: 28, paddingTop: 4 }}>
+        {/* AI suggestions panel */}
+        {suggestions && suggestions.length > 0 && (
+          <View style={{ backgroundColor: Colors.surface, borderWidth: 1, borderColor: `${Colors.accent}30`, borderRadius: 12, padding: 14, marginBottom: 20 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <FontAwesome name="magic" size={14} color={Colors.accent} />
+              <Text style={{ fontFamily: 'DMSans_700Bold', fontSize: 14, color: Colors.textPrimary, flex: 1 }}>AI Suggestions</Text>
+              <TouchableOpacity onPress={() => setSuggestions(null)}>
+                <FontAwesome name="times" size={14} color={Colors.textMuted} />
+              </TouchableOpacity>
+            </View>
+            {suggestions.map((s, i) => {
+              const color = s.severity === 'critical' ? Colors.accentRed : s.severity === 'warning' ? Colors.orange : Colors.accent;
+              const icon = s.severity === 'critical' ? 'exclamation-circle' : s.severity === 'warning' ? 'exclamation-triangle' : 'info-circle';
+              return (
+                <View key={i} style={{ flexDirection: 'row', gap: 10, paddingVertical: 10, borderTopWidth: i === 0 ? 0 : 1, borderTopColor: Colors.border }}>
+                  <FontAwesome name={icon as any} size={13} color={color} style={{ marginTop: 2 }} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: Colors.textPrimary, marginBottom: 3 }}>{s.title}</Text>
+                    <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted, lineHeight: 17 }}>{s.detail}</Text>
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        )}
+
         {/* Conflict summary */}
         {conflictCount > 0 && (
           <View style={{ backgroundColor: `${Colors.orange}12`, borderWidth: 1, borderColor: `${Colors.orange}30`, borderRadius: 12, padding: 14, flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 20 }}>

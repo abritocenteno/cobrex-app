@@ -355,6 +355,8 @@ export default defineSchema({
     expiresAt: v.optional(v.number()),
     workPermitRequired: v.optional(v.boolean()),
     workPermitStatus: v.optional(v.string()),
+    workPermitSponsor: v.optional(v.string()),
+    workPermitDeadline: v.optional(v.number()),
     invitationLetterRequired: v.optional(v.boolean()),
     immigrationContact: v.optional(v.string()),
     notes: v.optional(v.string()),
@@ -379,6 +381,8 @@ export default defineSchema({
     baggageAllowance: v.optional(v.string()),
     oversizedBaggage: v.optional(v.boolean()),
     status: v.string(), // proposed | reserved | booked | checked_in | boarded | delayed | cancelled | arrived | rebooked
+    costAmount: v.optional(v.number()),
+    costCurrency: v.optional(v.string()),
     notes: v.optional(v.string()),
   })
     .index("by_traveler", ["travelerId"])
@@ -397,6 +401,8 @@ export default defineSchema({
     hotelPhone: v.optional(v.string()),
     paymentResponsibility: v.optional(v.string()),
     roomingListStatus: v.optional(v.string()),
+    totalCost: v.optional(v.number()),
+    costCurrency: v.optional(v.string()),
     notes: v.optional(v.string()),
   })
     .index("by_artist", ["artistId"])
@@ -433,6 +439,8 @@ export default defineSchema({
     luggageCount: v.optional(v.number()),
     travelerIds: v.optional(v.array(v.id("travelers"))),
     status: v.string(), // scheduled | driver_assigned | driver_en_route | driver_arrived | in_transit | delayed | arrived | completed | cancelled
+    costAmount: v.optional(v.number()),
+    costCurrency: v.optional(v.string()),
     notes: v.optional(v.string()),
   })
     .index("by_tour_party", ["tourPartyId"])

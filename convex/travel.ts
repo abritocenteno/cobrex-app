@@ -357,6 +357,8 @@ export const updateVisaCase = mutation({
     expiresAt: v.optional(v.number()),
     workPermitRequired: v.optional(v.boolean()),
     workPermitStatus: v.optional(v.string()),
+    workPermitSponsor: v.optional(v.string()),
+    workPermitDeadline: v.optional(v.number()),
     invitationLetterRequired: v.optional(v.boolean()),
     immigrationContact: v.optional(v.string()),
     notes: v.optional(v.string()),
@@ -443,6 +445,8 @@ export const addFlight = mutation({
     seat: v.optional(v.string()),
     baggageAllowance: v.optional(v.string()),
     oversizedBaggage: v.optional(v.boolean()),
+    costAmount: v.optional(v.number()),
+    costCurrency: v.optional(v.string()),
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -465,6 +469,8 @@ export const addFlight = mutation({
       baggageAllowance: sanitizeStr(args.baggageAllowance),
       oversizedBaggage: args.oversizedBaggage,
       status: "booked",
+      costAmount: args.costAmount,
+      costCurrency: args.costCurrency,
       notes: sanitizeStr(args.notes, 500),
     });
   },
@@ -534,6 +540,8 @@ export const addHotelBooking = mutation({
     reservationNumber: v.optional(v.string()),
     hotelPhone: v.optional(v.string()),
     paymentResponsibility: v.optional(v.string()),
+    totalCost: v.optional(v.number()),
+    costCurrency: v.optional(v.string()),
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -552,6 +560,8 @@ export const addHotelBooking = mutation({
       hotelPhone: sanitizeStr(args.hotelPhone),
       paymentResponsibility: sanitizeStr(args.paymentResponsibility),
       roomingListStatus: "pending",
+      totalCost: args.totalCost,
+      costCurrency: args.costCurrency,
       notes: sanitizeStr(args.notes, 500),
     });
   },
@@ -699,6 +709,8 @@ export const addTransportJob = mutation({
     licensePlate: v.optional(v.string()),
     passengerCount: v.optional(v.number()),
     luggageCount: v.optional(v.number()),
+    costAmount: v.optional(v.number()),
+    costCurrency: v.optional(v.string()),
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -720,6 +732,8 @@ export const addTransportJob = mutation({
       passengerCount: args.passengerCount,
       luggageCount: args.luggageCount,
       status: "scheduled",
+      costAmount: args.costAmount,
+      costCurrency: args.costCurrency,
       notes: sanitizeStr(args.notes, 500),
     });
   },
@@ -940,6 +954,78 @@ export const buildItinerary = mutation({
     }
 
     return { itemCount: flights.length * 2 + hotels.length * 2 + transports.length };
+  },
+});
+
+// ─── Travel Cost Summary ──────────────────────────────────────────────────────
+
+export const travelCostSummary = query({
+  args: { tourPartyId: v.id("tourParties") },
+  handler: async (ctx, args) => {
+    const party = await ctx.db.get(args.tourPartyId);
+    if (!party) return null;
+    await requireTravelAccess(ctx, party.artistId);
+
+    const [flights, hotels, transport] = await Promise.all([
+      ctx.db
+        .query("flightBookings")
+        .withIndex("by_tour_party", (q) => q.eq("tourPartyId", args.tourPartyId))
+        .take(100),
+      ctx.db
+        .query("hotelBookings")
+        .withIndex("by_tour_party", (q) => q.eq("tourPartyId", args.tourPartyId))
+        .take(50),
+      ctx.db
+        .query("transportJobs")
+        .withIndex("by_tour_party", (q) => q.eq("tourPartyId", args.tourPartyId))
+        .take(100),
+    ]);
+
+    const allCurrencies = [
+      ...flights.map((f) => f.costCurrency).filter(Boolean),
+      ...hotels.map((h) => h.costCurrency).filter(Boolean),
+      ...transport.map((t) => t.costCurrency).filter(Boolean),
+    ] as string[];
+    const freq: Record<string, number> = {};
+    for (const c of allCurrencies) freq[c] = (freq[c] ?? 0) + 1;
+    const primaryCurrency =
+      Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "USD";
+
+    const flightTotal = flights.reduce((s, f) => s + (f.costAmount ?? 0), 0);
+    const hotelTotal = hotels.reduce((s, h) => s + (h.totalCost ?? 0), 0);
+    const transportTotal = transport.reduce((s, t) => s + (t.costAmount ?? 0), 0);
+
+    return {
+      primaryCurrency,
+      grandTotal: flightTotal + hotelTotal + transportTotal,
+      flights: {
+        total: flightTotal,
+        items: flights.map((f) => ({
+          _id: f._id,
+          label: `${f.airline} ${f.flightNumber}`,
+          cost: f.costAmount ?? 0,
+          currency: f.costCurrency ?? primaryCurrency,
+        })),
+      },
+      hotels: {
+        total: hotelTotal,
+        items: hotels.map((h) => ({
+          _id: h._id,
+          label: h.hotelName,
+          cost: h.totalCost ?? 0,
+          currency: h.costCurrency ?? primaryCurrency,
+        })),
+      },
+      transport: {
+        total: transportTotal,
+        items: transport.map((t) => ({
+          _id: t._id,
+          label: `${t.type.replace(/_/g, " ")} — ${t.pickupLocation}`,
+          cost: t.costAmount ?? 0,
+          currency: t.costCurrency ?? primaryCurrency,
+        })),
+      },
+    };
   },
 });
 

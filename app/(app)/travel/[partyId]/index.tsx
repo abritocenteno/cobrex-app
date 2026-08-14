@@ -242,6 +242,7 @@ export default function PartyManifestScreen() {
             { icon: 'building', label: 'Hotels', sub: 'Accommodation & rooming list', route: 'hotels' },
             { icon: 'car', label: 'Transport', sub: 'Transfers & ground logistics', route: 'transport' },
             { icon: 'calendar', label: 'Itinerary', sub: 'Full trip timeline', route: 'itinerary' },
+            { icon: 'dollar', label: 'Costs', sub: 'Budget & cost breakdown', route: 'costs' },
             { icon: 'file-text-o', label: 'Documents', sub: 'Passports & travel docs', route: 'doc-add' },
           ].map(({ icon, label, sub, route }) => (
             <TouchableOpacity

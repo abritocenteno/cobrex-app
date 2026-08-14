@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from 'convex/react';
+import { useMutation, useQuery, useAction } from 'convex/react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { api } from '../../../../convex/_generated/api';
 import { Id } from '../../../../convex/_generated/dataModel';
@@ -35,6 +35,7 @@ export default function DocAddScreen() {
   const travelers = useQuery(api.travel.listTravelers, { tourPartyId });
   const addDoc = useMutation(api.travel.addTravelDocument);
   const generateUploadUrl = useMutation(api.travel.generateDocUploadUrl);
+  const extractPassportData = useAction(api.aiTravel.extractPassportData);
 
   const [travelerId, setTravelerId] = useState<Id<'travelers'> | null>(null);
   const [docType, setDocType] = useState('passport');
@@ -43,8 +44,9 @@ export default function DocAddScreen() {
   const [docNumber, setDocNumber] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
   const [notes, setNotes] = useState('');
-  const [uploadedFile, setUploadedFile] = useState<{ name: string; storageId: Id<'_storage'> } | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<{ name: string; storageId: Id<'_storage'>; mimeType: string } | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [extracting, setExtracting] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const handleFilePick = async () => {
@@ -67,11 +69,34 @@ export default function DocAddScreen() {
       });
       if (!uploadRes.ok) throw new Error('Upload failed');
       const { storageId } = await uploadRes.json();
-      setUploadedFile({ name: file.name ?? 'Document', storageId });
+      setUploadedFile({ name: file.name ?? 'Document', storageId, mimeType: file.mimeType ?? 'image/jpeg' });
     } catch (err: any) {
       Alert.alert('Upload Error', err?.message ?? 'Could not upload file');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleExtract = async () => {
+    if (!uploadedFile) return;
+    setExtracting(true);
+    try {
+      const result = await extractPassportData({ storageId: uploadedFile.storageId, mimeType: uploadedFile.mimeType });
+      if (result.ok && result.data) {
+        const d = result.data as Record<string, string | null>;
+        if (d.docType && DOC_TYPES.find((t) => t.value === d.docType)) setDocType(d.docType!);
+        if (d.issuingCountry) setIssuingCountry(d.issuingCountry);
+        if (d.nationality) setNationality(d.nationality);
+        if (d.docNumber) setDocNumber(d.docNumber);
+        if (d.expiryDate) setExpiryDate(d.expiryDate);
+        Alert.alert('Data Extracted', 'Fields pre-filled from the document. Please verify before saving.');
+      } else {
+        Alert.alert('Could Not Extract', 'No readable data found in this document. Fill in the fields manually.');
+      }
+    } catch (err: any) {
+      Alert.alert('Extract Error', err?.message ?? 'Could not extract document data');
+    } finally {
+      setExtracting(false);
     }
   };
 
@@ -281,6 +306,34 @@ export default function DocAddScreen() {
               </TouchableOpacity>
             )}
           </TouchableOpacity>
+
+          {uploadedFile && (
+            <TouchableOpacity
+              onPress={handleExtract}
+              disabled={extracting}
+              style={{
+                marginTop: 8,
+                backgroundColor: `${Colors.accent}18`,
+                borderWidth: 1,
+                borderColor: `${Colors.accent}40`,
+                borderRadius: 10,
+                paddingVertical: 11,
+                paddingHorizontal: 14,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+              }}
+            >
+              {extracting ? (
+                <ActivityIndicator size="small" color={Colors.accent} />
+              ) : (
+                <FontAwesome name="magic" size={14} color={Colors.accent} />
+              )}
+              <Text style={{ fontFamily: 'DMSans_600SemiBold', fontSize: 13, color: Colors.accent }}>
+                {extracting ? 'Extracting…' : 'Scan & Extract Data'}
+              </Text>
+            </TouchableOpacity>
+          )}
         </Field>
 
         <Field label="Notes">

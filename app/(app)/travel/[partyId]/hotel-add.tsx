@@ -26,6 +26,8 @@ export default function HotelAddScreen() {
   const [reservationNumber, setReservationNumber] = useState('');
   const [hotelPhone, setHotelPhone] = useState('');
   const [paymentResponsibility, setPaymentResponsibility] = useState('');
+  const [totalCost, setTotalCost] = useState('');
+  const [costCurrency, setCostCurrency] = useState('USD');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -48,6 +50,8 @@ export default function HotelAddScreen() {
         reservationNumber: reservationNumber.trim() || undefined,
         hotelPhone: hotelPhone.trim() || undefined,
         paymentResponsibility: paymentResponsibility.trim() || undefined,
+        totalCost: totalCost.trim() ? parseFloat(totalCost) : undefined,
+        costCurrency: costCurrency.trim() || undefined,
         notes: notes.trim() || undefined,
       });
       router.back();
@@ -108,6 +112,19 @@ export default function HotelAddScreen() {
         <Field label="Payment Responsibility">
           <TextInput value={paymentResponsibility} onChangeText={setPaymentResponsibility} placeholder="e.g. Promoter / Artist / Split" placeholderTextColor={Colors.textMuted} style={inputStyle} />
         </Field>
+
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ flex: 2 }}>
+            <Field label="Total Cost">
+              <TextInput value={totalCost} onChangeText={setTotalCost} placeholder="0.00" placeholderTextColor={Colors.textMuted} keyboardType="decimal-pad" style={inputStyle} />
+            </Field>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Field label="Currency">
+              <TextInput value={costCurrency} onChangeText={setCostCurrency} placeholder="USD" placeholderTextColor={Colors.textMuted} autoCapitalize="characters" maxLength={3} style={inputStyle} />
+            </Field>
+          </View>
+        </View>
 
         <Field label="Notes">
           <TextInput value={notes} onChangeText={setNotes} placeholder="Any special requirements..." placeholderTextColor={Colors.textMuted} multiline numberOfLines={3} style={[inputStyle, { height: 90, textAlignVertical: 'top', paddingTop: 12 }]} />

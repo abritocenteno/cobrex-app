@@ -31,6 +31,8 @@ export default function FlightAddScreen() {
   const [seat, setSeat] = useState('');
   const [terminal, setTerminal] = useState('');
   const [baggageAllowance, setBaggageAllowance] = useState('');
+  const [costAmount, setCostAmount] = useState('');
+  const [costCurrency, setCostCurrency] = useState('USD');
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -59,6 +61,8 @@ export default function FlightAddScreen() {
         seat: seat.trim() || undefined,
         terminal: terminal.trim() || undefined,
         baggageAllowance: baggageAllowance.trim() || undefined,
+        costAmount: costAmount.trim() ? parseFloat(costAmount) : undefined,
+        costCurrency: costCurrency.trim() || undefined,
       });
       router.back();
     } catch (err: any) {
@@ -159,6 +163,19 @@ export default function FlightAddScreen() {
           <View style={{ flex: 1 }}>
             <Field label="Baggage Allowance">
               <TextInput value={baggageAllowance} onChangeText={setBaggageAllowance} placeholder="23kg" placeholderTextColor={Colors.textMuted} style={inputStyle} />
+            </Field>
+          </View>
+        </View>
+
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ flex: 2 }}>
+            <Field label="Ticket Cost">
+              <TextInput value={costAmount} onChangeText={setCostAmount} placeholder="0.00" placeholderTextColor={Colors.textMuted} keyboardType="decimal-pad" style={inputStyle} />
+            </Field>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Field label="Currency">
+              <TextInput value={costCurrency} onChangeText={setCostCurrency} placeholder="USD" placeholderTextColor={Colors.textMuted} autoCapitalize="characters" maxLength={3} style={inputStyle} />
             </Field>
           </View>
         </View>
