@@ -3,7 +3,7 @@ import { api } from '../../convex/_generated/api';
 import { useAuth } from '@clerk/clerk-expo';
 import { useRouter } from 'expo-router';
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, Image, Share, Clipboard } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, KeyboardAvoidingView, Platform, Image, Share, Clipboard, Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { FontAwesome } from '@expo/vector-icons';
 import { Colors } from '../../src/constants/colors';
@@ -354,8 +354,14 @@ export default function ProfileScreen() {
           <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 12, color: Colors.textMuted, textDecorationLine: 'underline' }}>Privacy Policy</Text>
         </TouchableOpacity>
 
-        <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 11, color: Colors.textMuted, textAlign: 'center', marginBottom: 24 }}>
+        <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 11, color: Colors.textMuted, textAlign: 'center', marginBottom: 4 }}>
           Cobrex Artist Management OS
+        </Text>
+        <Text style={{ fontFamily: 'DMSans_400Regular', fontSize: 11, color: Colors.textMuted, textAlign: 'center', marginBottom: 24 }}>
+          Powered by{' '}
+          <Text onPress={() => Linking.openURL('https://prikichilabs.com')} style={{ textDecorationLine: 'underline' }}>
+            Prikichi Labs
+          </Text>
         </Text>
 
       </ScrollView>
